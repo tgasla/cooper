@@ -1,4 +1,4 @@
-package org.cloudvisualization;
+package org.cooper;
 
 class Main {
     public static void main(String[] args) {

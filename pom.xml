@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.cloudvisualization</groupId>
-    <artifactId>cloudvisualization</artifactId>
+    <groupId>org.cooper</groupId>
+    <artifactId>cooper</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -71,7 +71,7 @@
                         <configuration>
                             <jdbc>
                                 <driver>org.postgresql.Driver</driver>
-                                <url>jdbc:postgresql://localhost:5432/cloudviz</url>
+                                <url>jdbc:postgresql://localhost:5432/cooper</url>
                                 <user>postgres</user>
                                 <password>password</password>
                             </jdbc>
@@ -87,7 +87,7 @@
                                 </database>
 
                                 <target>
-                                    <packageName>org.cloudvisualization.jooq.model</packageName>
+                                    <packageName>org.cooper.jooq.model</packageName>
                                     <directory>./src/main/java</directory>
                                 </target>
                             </generator>
@@ -100,7 +100,7 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>10.19.0</version>
                 <configuration>
-                    <url>jdbc:postgresql://localhost:5432/cloudviz</url>
+                    <url>jdbc:postgresql://localhost:5432/cooper</url>
                     <user>postgres</user>
                     <password>password</password>
                     <schemas>
