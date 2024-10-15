@@ -4,10 +4,23 @@
 package org.cooper.jooq.model;
 
 
+import org.cooper.jooq.model.tables.Cloudlet;
+import org.cooper.jooq.model.tables.CloudletMetric;
 import org.cooper.jooq.model.tables.FlywaySchemaHistory;
+import org.cooper.jooq.model.tables.Host;
+import org.cooper.jooq.model.tables.HostMetric;
 import org.cooper.jooq.model.tables.Simulation;
+import org.cooper.jooq.model.tables.Vm;
+import org.cooper.jooq.model.tables.VmMetric;
+import org.cooper.jooq.model.tables.records.CloudletMetricRecord;
+import org.cooper.jooq.model.tables.records.CloudletRecord;
 import org.cooper.jooq.model.tables.records.FlywaySchemaHistoryRecord;
+import org.cooper.jooq.model.tables.records.HostMetricRecord;
+import org.cooper.jooq.model.tables.records.HostRecord;
 import org.cooper.jooq.model.tables.records.SimulationRecord;
+import org.cooper.jooq.model.tables.records.VmMetricRecord;
+import org.cooper.jooq.model.tables.records.VmRecord;
+import org.jooq.ForeignKey;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
@@ -25,6 +38,25 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final UniqueKey<CloudletRecord> CLOUDLET_PKEY = Internal.createUniqueKey(Cloudlet.CLOUDLET, DSL.name("cloudlet_pkey"), new TableField[] { Cloudlet.CLOUDLET.ID }, true);
+    public static final UniqueKey<CloudletMetricRecord> CLOUDLET_METRIC_PKEY = Internal.createUniqueKey(CloudletMetric.CLOUDLET_METRIC, DSL.name("cloudlet_metric_pkey"), new TableField[] { CloudletMetric.CLOUDLET_METRIC.ID }, true);
     public static final UniqueKey<FlywaySchemaHistoryRecord> FLYWAY_SCHEMA_HISTORY_PK = Internal.createUniqueKey(FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY, DSL.name("flyway_schema_history_pk"), new TableField[] { FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK }, true);
+    public static final UniqueKey<HostRecord> HOST_PKEY = Internal.createUniqueKey(Host.HOST, DSL.name("host_pkey"), new TableField[] { Host.HOST.ID }, true);
+    public static final UniqueKey<HostMetricRecord> HOST_METRIC_PKEY = Internal.createUniqueKey(HostMetric.HOST_METRIC, DSL.name("host_metric_pkey"), new TableField[] { HostMetric.HOST_METRIC.ID }, true);
     public static final UniqueKey<SimulationRecord> SIMULATION_PKEY = Internal.createUniqueKey(Simulation.SIMULATION, DSL.name("simulation_pkey"), new TableField[] { Simulation.SIMULATION.ID }, true);
+    public static final UniqueKey<VmRecord> VM_PKEY = Internal.createUniqueKey(Vm.VM, DSL.name("vm_pkey"), new TableField[] { Vm.VM.ID }, true);
+    public static final UniqueKey<VmMetricRecord> VM_METRIC_PKEY = Internal.createUniqueKey(VmMetric.VM_METRIC, DSL.name("vm_metric_pkey"), new TableField[] { VmMetric.VM_METRIC.ID }, true);
+
+    // -------------------------------------------------------------------------
+    // FOREIGN KEY definitions
+    // -------------------------------------------------------------------------
+
+    public static final ForeignKey<CloudletRecord, SimulationRecord> CLOUDLET__CLOUDLET_SIMULATION_ID_FKEY = Internal.createForeignKey(Cloudlet.CLOUDLET, DSL.name("cloudlet_simulation_id_fkey"), new TableField[] { Cloudlet.CLOUDLET.SIMULATION_ID }, Keys.SIMULATION_PKEY, new TableField[] { Simulation.SIMULATION.ID }, true);
+    public static final ForeignKey<CloudletRecord, VmRecord> CLOUDLET__CLOUDLET_VM_ID_FKEY = Internal.createForeignKey(Cloudlet.CLOUDLET, DSL.name("cloudlet_vm_id_fkey"), new TableField[] { Cloudlet.CLOUDLET.VM_ID }, Keys.VM_PKEY, new TableField[] { Vm.VM.ID }, true);
+    public static final ForeignKey<CloudletMetricRecord, CloudletRecord> CLOUDLET_METRIC__CLOUDLET_METRIC_CLOUDLET_ID_FKEY = Internal.createForeignKey(CloudletMetric.CLOUDLET_METRIC, DSL.name("cloudlet_metric_cloudlet_id_fkey"), new TableField[] { CloudletMetric.CLOUDLET_METRIC.CLOUDLET_ID }, Keys.CLOUDLET_PKEY, new TableField[] { Cloudlet.CLOUDLET.ID }, true);
+    public static final ForeignKey<HostRecord, SimulationRecord> HOST__HOST_SIMULATION_ID_FKEY = Internal.createForeignKey(Host.HOST, DSL.name("host_simulation_id_fkey"), new TableField[] { Host.HOST.SIMULATION_ID }, Keys.SIMULATION_PKEY, new TableField[] { Simulation.SIMULATION.ID }, true);
+    public static final ForeignKey<HostMetricRecord, HostRecord> HOST_METRIC__HOST_METRIC_HOST_ID_FKEY = Internal.createForeignKey(HostMetric.HOST_METRIC, DSL.name("host_metric_host_id_fkey"), new TableField[] { HostMetric.HOST_METRIC.HOST_ID }, Keys.HOST_PKEY, new TableField[] { Host.HOST.ID }, true);
+    public static final ForeignKey<VmRecord, HostRecord> VM__VM_HOST_ID_FKEY = Internal.createForeignKey(Vm.VM, DSL.name("vm_host_id_fkey"), new TableField[] { Vm.VM.HOST_ID }, Keys.HOST_PKEY, new TableField[] { Host.HOST.ID }, true);
+    public static final ForeignKey<VmRecord, SimulationRecord> VM__VM_SIMULATION_ID_FKEY = Internal.createForeignKey(Vm.VM, DSL.name("vm_simulation_id_fkey"), new TableField[] { Vm.VM.SIMULATION_ID }, Keys.SIMULATION_PKEY, new TableField[] { Simulation.SIMULATION.ID }, true);
+    public static final ForeignKey<VmMetricRecord, VmRecord> VM_METRIC__VM_METRIC_VM_ID_FKEY = Internal.createForeignKey(VmMetric.VM_METRIC, DSL.name("vm_metric_vm_id_fkey"), new TableField[] { VmMetric.VM_METRIC.VM_ID }, Keys.VM_PKEY, new TableField[] { Vm.VM.ID }, true);
 }

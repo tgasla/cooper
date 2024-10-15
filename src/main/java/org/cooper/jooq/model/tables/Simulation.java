@@ -10,12 +10,19 @@ import java.util.UUID;
 
 import org.cooper.jooq.model.Keys;
 import org.cooper.jooq.model.Public;
+import org.cooper.jooq.model.tables.Cloudlet.CloudletPath;
+import org.cooper.jooq.model.tables.Host.HostPath;
+import org.cooper.jooq.model.tables.Vm.VmPath;
 import org.cooper.jooq.model.tables.records.SimulationRecord;
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.ForeignKey;
+import org.jooq.InverseForeignKey;
 import org.jooq.Name;
+import org.jooq.Path;
 import org.jooq.PlainSQL;
 import org.jooq.QueryPart;
+import org.jooq.Record;
 import org.jooq.SQL;
 import org.jooq.Schema;
 import org.jooq.Select;
@@ -99,6 +106,39 @@ public class Simulation extends TableImpl<SimulationRecord> {
         this(DSL.name("simulation"), null);
     }
 
+    public <O extends Record> Simulation(Table<O> path, ForeignKey<O, SimulationRecord> childPath, InverseForeignKey<O, SimulationRecord> parentPath) {
+        super(path, childPath, parentPath, SIMULATION);
+    }
+
+    /**
+     * A subtype implementing {@link Path} for simplified path-based joins.
+     */
+    public static class SimulationPath extends Simulation implements Path<SimulationRecord> {
+
+        private static final long serialVersionUID = 1L;
+        public <O extends Record> SimulationPath(Table<O> path, ForeignKey<O, SimulationRecord> childPath, InverseForeignKey<O, SimulationRecord> parentPath) {
+            super(path, childPath, parentPath);
+        }
+        private SimulationPath(Name alias, Table<SimulationRecord> aliased) {
+            super(alias, aliased);
+        }
+
+        @Override
+        public SimulationPath as(String alias) {
+            return new SimulationPath(DSL.name(alias), this);
+        }
+
+        @Override
+        public SimulationPath as(Name alias) {
+            return new SimulationPath(alias, this);
+        }
+
+        @Override
+        public SimulationPath as(Table<?> alias) {
+            return new SimulationPath(alias.getQualifiedName(), this);
+        }
+    }
+
     @Override
     public Schema getSchema() {
         return aliased() ? null : Public.PUBLIC;
@@ -107,6 +147,43 @@ public class Simulation extends TableImpl<SimulationRecord> {
     @Override
     public UniqueKey<SimulationRecord> getPrimaryKey() {
         return Keys.SIMULATION_PKEY;
+    }
+
+    private transient CloudletPath _cloudlet;
+
+    /**
+     * Get the implicit to-many join path to the <code>public.cloudlet</code>
+     * table
+     */
+    public CloudletPath cloudlet() {
+        if (_cloudlet == null)
+            _cloudlet = new CloudletPath(this, null, Keys.CLOUDLET__CLOUDLET_SIMULATION_ID_FKEY.getInverseKey());
+
+        return _cloudlet;
+    }
+
+    private transient HostPath _host;
+
+    /**
+     * Get the implicit to-many join path to the <code>public.host</code> table
+     */
+    public HostPath host() {
+        if (_host == null)
+            _host = new HostPath(this, null, Keys.HOST__HOST_SIMULATION_ID_FKEY.getInverseKey());
+
+        return _host;
+    }
+
+    private transient VmPath _vm;
+
+    /**
+     * Get the implicit to-many join path to the <code>public.vm</code> table
+     */
+    public VmPath vm() {
+        if (_vm == null)
+            _vm = new VmPath(this, null, Keys.VM__VM_SIMULATION_ID_FKEY.getInverseKey());
+
+        return _vm;
     }
 
     @Override

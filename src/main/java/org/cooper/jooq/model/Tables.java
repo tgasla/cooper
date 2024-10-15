@@ -4,8 +4,14 @@
 package org.cooper.jooq.model;
 
 
+import org.cooper.jooq.model.tables.Cloudlet;
+import org.cooper.jooq.model.tables.CloudletMetric;
 import org.cooper.jooq.model.tables.FlywaySchemaHistory;
+import org.cooper.jooq.model.tables.Host;
+import org.cooper.jooq.model.tables.HostMetric;
 import org.cooper.jooq.model.tables.Simulation;
+import org.cooper.jooq.model.tables.Vm;
+import org.cooper.jooq.model.tables.VmMetric;
 
 
 /**
@@ -15,12 +21,42 @@ import org.cooper.jooq.model.tables.Simulation;
 public class Tables {
 
     /**
+     * The table <code>public.cloudlet</code>.
+     */
+    public static final Cloudlet CLOUDLET = Cloudlet.CLOUDLET;
+
+    /**
+     * The table <code>public.cloudlet_metric</code>.
+     */
+    public static final CloudletMetric CLOUDLET_METRIC = CloudletMetric.CLOUDLET_METRIC;
+
+    /**
      * The table <code>public.flyway_schema_history</code>.
      */
     public static final FlywaySchemaHistory FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistory.FLYWAY_SCHEMA_HISTORY;
 
     /**
+     * The table <code>public.host</code>.
+     */
+    public static final Host HOST = Host.HOST;
+
+    /**
+     * The table <code>public.host_metric</code>.
+     */
+    public static final HostMetric HOST_METRIC = HostMetric.HOST_METRIC;
+
+    /**
      * The table <code>public.simulation</code>.
      */
     public static final Simulation SIMULATION = Simulation.SIMULATION;
+
+    /**
+     * The table <code>public.vm</code>.
+     */
+    public static final Vm VM = Vm.VM;
+
+    /**
+     * The table <code>public.vm_metric</code>.
+     */
+    public static final VmMetric VM_METRIC = VmMetric.VM_METRIC;
 }
