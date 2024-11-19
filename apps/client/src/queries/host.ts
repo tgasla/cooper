@@ -4,8 +4,8 @@ export interface Host {
   id: string;
   simulation_id: string;
   cloudsim_id: string;
-  start_time_seconds: string;
-  finish_time_seconds: string | null;
+  start_time_seconds: number;
+  finish_time_seconds: number | null;
   vms: Vm[];
 }
 
@@ -35,7 +35,7 @@ export function useHostQuery(simulationId: string | undefined) {
     queryKey: ["hosts"],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:8080/host?select=*,vms:vm(*,cloudlets:cloudlet(*))&simulation_id=eq.${simulationId}`,
+        `http://localhost:8080/host?order=id.desc&select=*,vms:vm(*,cloudlets:cloudlet(*))&simulation_id=eq.${simulationId}`,
       );
       return (await response.json()) as Array<Host>;
     },

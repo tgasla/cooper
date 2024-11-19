@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { useHostQuery, Vm } from "../queries/host";
 import { useSimulationQuery } from "../queries/simulation";
 import { useTimeQuery } from "../queries/time";
@@ -55,6 +55,14 @@ function width(livedFor: number, secondSize = 50) {
   return `${(livedFor - 1) * secondSize}px`;
 }
 
+function shortName(uuid: string) {
+  return uuid.slice(0, 7);
+}
+
+function existedFor(start: number, finished: number) {
+  return finished - start - 1;
+}
+
 function Index() {
   const [secondSize, setSecondSize] = useState(50);
   const container = useRef<HTMLDivElement>(null);
@@ -72,12 +80,12 @@ function Index() {
     },
   );
 
-  useDrag(
-    (state) => {
-      console.log(state);
-    },
-    { target: container },
-  );
+  // useDrag(
+  //   (state) => {
+  //     console.log(state);
+  //   },
+  //   { target: container },
+  // );
 
   useEffect(() => {
     if (!simulationId && simulations && simulations.length > 0) {
@@ -109,11 +117,23 @@ function Index() {
 
   return (
     <div
-      className="border flex flex-col overflow-x-scroll max-w-screen relative"
+      className="flex flex-col overflow-x-scroll max-w-screen relative"
       ref={container}
     >
-      <div>{startTime.simulation_time_seconds}</div>
-      <div>{endTime.simulation_time_seconds}</div>
+      <div cn="flex gap-4">
+        <button
+          className="border p-2"
+          onClick={() => setSecondSize(secondSize + 10)}
+        >
+          Zoom in
+        </button>
+        <button
+          className="border p-2"
+          onClick={() => setSecondSize(secondSize - 10)}
+        >
+          Zoom out
+        </button>
+      </div>
       <div className="flex" style={{ width: secondSize * end }}>
         {new Array(end).fill(0).map((_, t) => (
           <Fragment key={t}>
@@ -133,26 +153,82 @@ function Index() {
           </Fragment>
         ))}
       </div>
+      <div className="from-yellow-400 to-yellow-500 from-red-400 to-red-500 from-blue-400 to-blue-500 from-green-500 to-green-500 from-purple-500 to-purple-500 border-red-600 border-yellow-600 border-blue-600 border-purple-600" />
 
       <div className="flex flex-col gap-3">
         {hosts.map((host) => (
-          <motion.div
-            key={host.id}
-            className={cn(
-              "flex flex-col bg-gradient-to-t from-yellow-400 to-yellow-500",
-              "h-12 rounded-lg border-yellow-600 border-1",
-            )}
-            initial={false}
-            animate={{
-              opacity: 1,
-              width: width(15, secondSize),
-            }}
-          >
-            {host.id}
-          </motion.div>
+          <>
+            <TimelineBar
+              key={host.id}
+              width={
+                existedFor(
+                  host.start_time_seconds,
+                  host.finish_time_seconds ?? end,
+                ) * secondSize
+              }
+              label={host.cloudsim_id}
+              color="yellow"
+              startAt={host.start_time_seconds * secondSize}
+            >
+              <div className="flex flex-col gap-2"></div>
+            </TimelineBar>
+            {host.vms.map((vm) => {
+              return (
+                <TimelineBar
+                  key={vm.id}
+                  color="blue"
+                  startAt={vm.start_time_seconds * secondSize}
+                  width={
+                    existedFor(
+                      vm.start_time_seconds,
+                      vm.finish_time_seconds ?? end,
+                    ) * secondSize
+                  }
+                >
+                  {vm.cloudsim_id}
+                </TimelineBar>
+              );
+            })}
+          </>
         ))}
       </div>
     </div>
+  );
+}
+
+interface TimelineBarProps {
+  width: number;
+  label: string;
+  children?: ReactNode;
+  color: "yellow" | "blue" | "green" | "purple";
+  startAt: number;
+}
+
+function TimelineBar({
+  width,
+  label,
+  children,
+  color,
+  startAt,
+}: TimelineBarProps) {
+  //
+  return (
+    <motion.div
+      className={cn(
+        `flex flex-col bg-gradient-to-t from-${color}-400 to-${color}-500`,
+        `min-h-12 rounded-lg border-${color}-600 border`,
+        "flex relative text-white font-mono",
+      )}
+      initial={false}
+      animate={{
+        opacity: 1,
+        width,
+        marginLeft: startAt,
+      }}
+    >
+      <span className="mx-2">{label}</span>
+      <div>{children}</div>
+    </motion.div>
   );
 }
 

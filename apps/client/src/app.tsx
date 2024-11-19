@@ -41,7 +41,9 @@ function Providers({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <Providers>
-      <Index />
+      <div className="p-4">
+        <Index />
+      </div>
     </Providers>
   );
 }
