@@ -41,7 +41,7 @@ function Providers({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <Providers>
-      <div className="p-4">
+      <div className="min-h-screen h-full min-w-screen bg-zinc-900 text-white">
         <Index />
       </div>
     </Providers>
