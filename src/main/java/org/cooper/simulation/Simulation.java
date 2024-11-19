@@ -67,6 +67,13 @@ public class Simulation {
                     .fetchAny().value1();
         }
 
+        if (host.isFinished()) {
+            ctx.update(Tables.HOST)
+                    .set(Tables.HOST.FINISH_TIME_SECONDS, time)
+                    .where(Tables.HOST.ID.eq(id))
+                    .execute();
+        }
+
         return id;
     }
 
@@ -83,6 +90,13 @@ public class Simulation {
                     .values(this.simulationId, vm.getId(), hostId, time)
                     .returningResult(Tables.VM.ID)
                     .fetchAny().value1();
+        }
+
+        if (vm.isFinished()) {
+            ctx.update(Tables.VM)
+                    .set(Tables.VM.FINISH_TIME_SECONDS, time)
+                    .where(Tables.VM.ID.eq(id))
+                    .execute();
         }
 
         return id;
@@ -102,6 +116,13 @@ public class Simulation {
                     .values(this.simulationId, cloudlet.getId(), vmId, time, cloudlet.getLength())
                     .returningResult(Tables.CLOUDLET.ID)
                     .fetchAny().value1();
+        }
+
+        if (cloudlet.isFinished()) {
+            ctx.update(Tables.CLOUDLET)
+                    .set(Tables.CLOUDLET.FINISH_TIME_SECONDS, time)
+                    .where(Tables.CLOUDLET.ID.eq(id))
+                    .execute();
         }
 
         return id;
