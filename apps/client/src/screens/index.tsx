@@ -116,10 +116,7 @@ function Index() {
     endTime.simulation_time_seconds - startTime.simulation_time_seconds;
 
   return (
-    <div
-      className="flex flex-col overflow-x-scroll max-w-screen relative"
-      ref={container}
-    >
+    <div>
       <div cn="flex gap-4">
         <button
           className="border p-2"
@@ -134,63 +131,83 @@ function Index() {
           Zoom out
         </button>
       </div>
-      <div className="flex" style={{ width: secondSize * end }}>
-        {new Array(end).fill(0).map((_, t) => (
-          <Fragment key={t}>
-            <motion.div
-              key={t}
-              initial={false}
-              animate={{
-                width: secondSize,
-              }}
-            >
-              <span>{t + 1}</span>
-            </motion.div>
-            <div
-              className="absolute w-[1px] h-full bg-black/10"
-              style={{ left: secondSize * t }}
-            ></div>
-          </Fragment>
-        ))}
-      </div>
-      <div className="from-yellow-400 to-yellow-500 from-red-400 to-red-500 from-blue-400 to-blue-500 from-green-500 to-green-500 from-purple-500 to-purple-500 border-red-600 border-yellow-600 border-blue-600 border-purple-600" />
+      <p>Simulation Time (seconds)</p>
+      <div
+        className="flex flex-col overflow-x-scroll max-w-screen relative"
+        ref={container}
+      >
+        <div>
+          <div className="flex" style={{ width: secondSize * end }}>
+            {new Array(end).fill(0).map((_, t) => (
+              <motion.div
+                key={t}
+                initial={false}
+                animate={{
+                  left: secondSize * t,
+                  width: secondSize,
+                }}
+              >
+                <motion.div
+                  key={t}
+                  animate={{}}
+                  className="absolute justify-center"
+                >
+                  {t + 1}
+                </motion.div>
+                <div className="absolute w-[1px] h-full bg-black/10"></div>
+              </motion.div>
+            ))}
+          </div>
+          <div className="from-yellow-400 to-yellow-500 from-red-400 to-red-500 from-blue-400 to-blue-500 from-green-500 to-green-500 from-purple-500 to-purple-500 border-red-600 border-yellow-600 border-blue-600 border-purple-600" />
 
-      <div className="flex flex-col gap-3">
-        {hosts.map((host) => (
-          <>
-            <TimelineBar
-              key={host.id}
-              width={
-                existedFor(
-                  host.start_time_seconds,
-                  host.finish_time_seconds ?? end,
-                ) * secondSize
-              }
-              label={host.cloudsim_id}
-              color="yellow"
-              startAt={host.start_time_seconds * secondSize}
-            >
-              <div className="flex flex-col gap-2"></div>
-            </TimelineBar>
-            {host.vms.map((vm) => {
-              return (
+          <div className="flex flex-col mt-8 gap-2">
+            {hosts.map((host) => (
+              <>
                 <TimelineBar
-                  key={vm.id}
-                  color="blue"
-                  startAt={vm.start_time_seconds * secondSize}
+                  key={host.id}
                   width={
                     existedFor(
-                      vm.start_time_seconds,
-                      vm.finish_time_seconds ?? end,
+                      host.start_time_seconds,
+                      host.finish_time_seconds ?? end,
                     ) * secondSize
                   }
+                  label={`Host ${host.cloudsim_id}`}
+                  color="yellow"
+                  startAt={host.start_time_seconds * secondSize}
                 >
-                  {vm.cloudsim_id}
+                  <div className="flex flex-col gap-2"></div>
                 </TimelineBar>
-              );
-            })}
-          </>
-        ))}
+                <div
+                  className="-mt-4 pt-4 bg-yellow-500/20 gap-2 flex flex-col rounded-b-lg border-yellow-500 border"
+                  style={{
+                    width:
+                      existedFor(
+                        host.start_time_seconds,
+                        host.finish_time_seconds ?? end,
+                      ) * secondSize,
+                  }}
+                >
+                  {host.vms.map((vm) => {
+                    return (
+                      <TimelineBar
+                        key={vm.id}
+                        color="blue"
+                        startAt={vm.start_time_seconds * secondSize}
+                        width={
+                          existedFor(
+                            vm.start_time_seconds,
+                            vm.finish_time_seconds ?? end,
+                          ) * secondSize
+                        }
+                        label={`VM ${vm.cloudsim_id}`}
+                      ></TimelineBar>
+                    );
+                  })}
+                </div>
+              </>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
