@@ -39,10 +39,17 @@ public class Simulation {
 
     public void recordState(Datacenter dc, double time) {
         var hosts = dc.getHostList();
+        this.insertTime(time);
 
         for (Host host : hosts) {
             traverseHost(host, time);
         }
+    }
+
+    private void insertTime(double time) {
+        ctx.insertInto(Tables.TIME, Tables.TIME.SIMULATION_ID, Tables.TIME.SIMULATION_TIME_SECONDS)
+                .values(this.simulationId, time)
+                .execute();
     }
 
     private UUID findOrInsertHost(Host host, double time) {

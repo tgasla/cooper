@@ -10,6 +10,7 @@ import org.cooper.jooq.model.tables.FlywaySchemaHistory;
 import org.cooper.jooq.model.tables.Host;
 import org.cooper.jooq.model.tables.HostMetric;
 import org.cooper.jooq.model.tables.Simulation;
+import org.cooper.jooq.model.tables.Time;
 import org.cooper.jooq.model.tables.Vm;
 import org.cooper.jooq.model.tables.VmMetric;
 
@@ -17,7 +18,7 @@ import org.cooper.jooq.model.tables.VmMetric;
 /**
  * Convenience access to all tables in public.
  */
-@SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
+@SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
 
     /**
@@ -49,6 +50,11 @@ public class Tables {
      * The table <code>public.simulation</code>.
      */
     public static final Simulation SIMULATION = Simulation.SIMULATION;
+
+    /**
+     * The table <code>public.time</code>.
+     */
+    public static final Time TIME = Time.TIME;
 
     /**
      * The table <code>public.vm</code>.

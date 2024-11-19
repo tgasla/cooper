@@ -23,7 +23,7 @@ import org.jooq.Field;
 /**
  * Convenience access to all stored procedures and functions in public.
  */
-@SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
+@SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Routines {
 
     /**
