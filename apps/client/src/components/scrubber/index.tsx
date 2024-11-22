@@ -84,23 +84,27 @@ function Scrubber() {
   const container = useRef<HTMLDivElement>(null);
   const cursorX = useMotionValue<number>(0);
 
-  usePinch(
-    (e) => {
-      console.log(e);
-    },
-    {
-      target: container,
-    },
-  );
+  const maxSecondSize = 5;
+  const minSecondSize = 0.5;
 
   useGesture(
     {
       onMove: ({ xy: [x] }) => {
-        cursorX.set(x);
-        setCurrentTime(x / secondSize);
+        // cursorX.set(x);
+        // setCurrentTime(x / secondSize);
+      },
+      onPinch: ({ canceled, offset: [scaleOffset], distance }) => {
+        if (canceled) return;
+
+        const newScale = 25 * scaleOffset;
+        setSecondSize(newScale);
       },
     },
-    { target: container, eventOptions: {} },
+    {
+      target: container,
+      eventOptions: { passive: false },
+      pinch: { threshold: 0.1 },
+    },
   );
 
   useEffect(() => {
@@ -119,7 +123,8 @@ function Scrubber() {
 
   const startTime = times[0];
   const endTime = times[times.length - 1];
-  const end = nearest10(endTime.simulation_time_seconds);
+  // const end = nearest10(endTime.simulation_time_seconds);
+  const end = 200;
   const delta =
     endTime.simulation_time_seconds - startTime.simulation_time_seconds;
 
@@ -127,7 +132,6 @@ function Scrubber() {
     (container.current?.clientWidth ?? 1024) / secondSize;
 
   const markersToRender = () => {
-    console.log(possibleNumberOfMarkersToRender);
     if (possibleNumberOfMarkersToRender < 12) {
       return 1;
     }
@@ -136,7 +140,15 @@ function Scrubber() {
       return 2;
     }
 
-    return 5;
+    if (possibleNumberOfMarkersToRender < 60) {
+      return 5;
+    }
+
+    if (possibleNumberOfMarkersToRender < 120) {
+      return 10;
+    }
+
+    return 20;
   };
 
   const ignorable = markersToRender();
@@ -158,7 +170,7 @@ function Scrubber() {
           Zoom out
         </button>
       </div>
-      <p>Simulation Time (seconds)</p>
+      <p>Simulation Time (seconds) ({secondSize})</p>
       <div
         className="bg-zinc-800 flex flex-col overflow-scroll max-h-[500px] max-w-screen relative"
         ref={container}
@@ -166,8 +178,8 @@ function Scrubber() {
         {/*<Cursor x={cursorX} currentTime={currentTime} />*/}
         <div className="ml-4 w-full">
           <div
-            style={{ width: secondSize * (end + 1) * 2 }}
-            className="z-20 flex items-center h-8 sticky top-0 bg-zinc-800 shadow-xl"
+            style={{ width: secondSize * (end + 1) * 1.25 }}
+            className="z-20 flex items-center h-8 sticky top-0 bg-zinc-700 shadow-lg"
           >
             {new Array(end + 1).fill(0).map((_, t) => (
               <motion.div
@@ -187,7 +199,7 @@ function Scrubber() {
                       exit={{ opacity: 0 }}
                       className="flex items-center justify-start gap-2 h-8"
                     >
-                      <span className="w-[1px] h-full bg-blue-400/50" />
+                      <span className="w-1 h-1 -ml-0.5 rounded-full bg-white/50" />
                       <span className="">{secondsToDuration(t)}</span>
                     </motion.div>
                   )}
@@ -195,14 +207,14 @@ function Scrubber() {
               </motion.div>
             ))}
           </div>
-          {new Array((end + 1) * 2).fill(0).map((_, t) => (
+          {new Array(end + 1).fill(0).map((_, t) => (
             <motion.div
               key={t}
               initial={false}
               animate={{
                 left: secondSize * t,
               }}
-              className="ml-4 absolute w-[1px] h-full bg-white/10 z-10"
+              className="ml-4 absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
             />
           ))}
           <div className="flex flex-col gap-4 py-4">
@@ -220,7 +232,9 @@ function Scrubber() {
                   className="bg-gradient-to-t from-amber-400/20 bg-amber-500/40 border-amber-600 border"
                   startAt={host.start_time_seconds * secondSize}
                 >
-                  <span className="m-2">Host {host.cloudsim_id}</span>
+                  <span className="m-2 sticky left-2">
+                    Host {host.cloudsim_id}
+                  </span>
                   <div className="flex flex-col gap-2">
                     {host.vms.map((vm, idx) => {
                       const vmStartTime = vm.start_time_seconds * secondSize;
@@ -240,11 +254,13 @@ function Scrubber() {
                             2
                           }
                         >
-                          <span className="m-2">VM {vm.cloudsim_id}</span>
+                          <span className="m-2 sticky left-2">
+                            VM {vm.cloudsim_id}
+                          </span>
 
                           {vm.cloudlets.map((cloudlet) => (
                             <motion.div
-                              className="rounded bg-gradient-to-t from-cyan-500 to-cyan-400 flex"
+                              className="rounded bg-gradient-to-t from-emerald-500 to-emerald-400 flex"
                               initial={false}
                               animate={{
                                 marginLeft:
