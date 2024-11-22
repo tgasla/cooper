@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.1.0",
     "@tanstack/react-query": "^5.59.15",
     "@use-gesture/react": "^10.3.1",
     "@visx/visx": "^3.11.0",

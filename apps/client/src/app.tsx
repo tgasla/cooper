@@ -4,6 +4,8 @@ import { Axis, Scale } from "@visx/visx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Index from "./screens";
 
+import "@fontsource/inter";
+
 function TimeAxis() {
   const now = new Date();
 

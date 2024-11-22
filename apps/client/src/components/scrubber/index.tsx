@@ -82,17 +82,9 @@ function Scrubber() {
   const [currentTime, setCurrentTime] = useState(0);
   const [secondSize, setSecondSize] = useState(50);
   const container = useRef<HTMLDivElement>(null);
-  const cursorX = useMotionValue<number>(0);
-
-  const maxSecondSize = 5;
-  const minSecondSize = 0.5;
 
   useGesture(
     {
-      onMove: ({ xy: [x] }) => {
-        // cursorX.set(x);
-        // setCurrentTime(x / secondSize);
-      },
       onPinch: ({ canceled, offset: [scaleOffset], distance }) => {
         if (canceled) return;
 
@@ -108,10 +100,6 @@ function Scrubber() {
   );
 
   useEffect(() => {
-    setCurrentTime(cursorX.get() / secondSize);
-  }, [cursorX, secondSize]);
-
-  useEffect(() => {
     if (!simulationId && simulations && simulations.length > 0) {
       setSimulationId(simulations[0].id);
     }
@@ -123,8 +111,7 @@ function Scrubber() {
 
   const startTime = times[0];
   const endTime = times[times.length - 1];
-  // const end = nearest10(endTime.simulation_time_seconds);
-  const end = 200;
+  const end = nearest10(endTime.simulation_time_seconds);
   const delta =
     endTime.simulation_time_seconds - startTime.simulation_time_seconds;
 
@@ -172,14 +159,16 @@ function Scrubber() {
       </div>
       <p>Simulation Time (seconds) ({secondSize})</p>
       <div
-        className="bg-zinc-800 flex flex-col overflow-scroll max-h-[500px] max-w-screen relative"
+        className="bg-zinc-800 flex flex-col overflow-scroll max-h-[500px] w-full max-w-screen relative"
         ref={container}
       >
         {/*<Cursor x={cursorX} currentTime={currentTime} />*/}
-        <div className="ml-4 w-full">
+        <div className="ml-4 min-w-screen">
           <div
-            style={{ width: secondSize * (end + 1) * 1.25 }}
-            className="z-20 flex items-center h-8 sticky top-0 bg-zinc-700 shadow-lg"
+            style={{
+              width: `max(${secondSize * (end + 1) + 100}px, calc(100vw- 16px))`,
+            }}
+            className="z-20 flex items-center h-8 sticky top-0 bg-zinc-700 shadow-lg min-w-screen"
           >
             {new Array(end + 1).fill(0).map((_, t) => (
               <motion.div
