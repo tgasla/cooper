@@ -1,8 +1,0 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-CREATE TABLE simulation (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  ended_at TIMESTAMP
-);
