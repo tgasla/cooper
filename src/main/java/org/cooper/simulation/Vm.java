@@ -1,19 +1,25 @@
 package org.cooper.simulation;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
-public class Vm {
-    private String cloudsimId;
-    private Double startTimeSeconds;
-    private Optional<String> endTimeSeconds;
-    private String hostId;
+import com.google.gson.annotations.SerializedName;
+import org.cooper.simulation.metrics.VmMetric;
 
-    public Vm(String cloudsimId, Double startTimeSeconds) {
+public class Vm {
+    @SerializedName("id")
+    private long cloudsimId;
+    private Double startTimeSeconds;
+    // private Optional<String> endTimeSeconds;
+    private String hostId;
+    private ArrayList<VmMetric> metrics = new ArrayList<>();
+
+    public Vm(long cloudsimId, Double startTimeSeconds) {
         this.cloudsimId = cloudsimId;
         this.startTimeSeconds = startTimeSeconds;
     }
 
-    public String getCloudsimId() {
+    public long getCloudsimId() {
         return cloudsimId;
     }
 
@@ -25,7 +31,7 @@ public class Vm {
         return hostId;
     }
 
-    public Optional<String> getEndTimeSeconds() {
-        return endTimeSeconds;
-    }
+    // public Optional<String> getEndTimeSeconds() {
+    // return endTimeSeconds;
+    // }
 }

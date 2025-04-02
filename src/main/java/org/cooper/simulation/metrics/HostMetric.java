@@ -1,11 +1,11 @@
 package org.cooper.simulation.metrics;
 
-class HostMetric {
+public class HostMetric {
     private Double simulationTime; // seconds
     private Double cpuUtilization; // percentage
-    private Integer ramUsage; // megabytes
+    private Long ramUsage; // megabytes
 
-    public HostMetric(Double simulationTime, Double cpuUtilization, Integer ramUsage) {
+    public HostMetric(Double simulationTime, Double cpuUtilization, Long ramUsage) {
         this.simulationTime = simulationTime;
         this.cpuUtilization = cpuUtilization;
         this.ramUsage = ramUsage;
@@ -19,7 +19,7 @@ class HostMetric {
         return cpuUtilization;
     }
 
-    public Integer getRamUsage() {
+    public Long getRamUsage() {
         return ramUsage;
     }
 }

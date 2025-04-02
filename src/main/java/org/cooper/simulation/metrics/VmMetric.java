@@ -1,6 +1,6 @@
 package org.cooper.simulation.metrics;
 
-class VmMetric {
+public class VmMetric {
     private Double simulationTime; // seconds
     private Double cpuUtilization; // percentage
     private Integer ramUsage; // megabytes

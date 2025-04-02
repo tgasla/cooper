@@ -1,0 +1,47 @@
+\chapter{Related Work and Ideas}
+
+\subsection{Cloud Computing Simulators and Visualization}
+The visualization of cloud infrastructure simulation results presents unique challenges distinct from live monitoring systems. While commercial platforms focus on real-time monitoring, simulation environments must effectively present comprehensive result sets that capture entire simulation runs. As emphasized by Wickremasinghe et al \cite{wickremasinghe2010cloudanalyst}, "the complexity of cloud computing environments demands visual tools that can represent both the geographic distribution of resources and their dynamic behavior over time."
+
+Early visualization approaches, exemplified by CloudAnalyst, focused primarily on geographic representation of cloud resources. Figure \ref{fig:cloudanalyst} shows CloudAnalyst's approach to visualizing datacenter distribution and workload mapping. This geographic visualization helped researchers understand spatial relationships between cloud resources, though it provided limited insight into temporal dynamics. Notably, CloudAnalyst remains one of the few dedicated visualization tools for cloud simulation, despite being released over a decade ago and lacking compatibility with modern simulation frameworks.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{cloud_analyst.png}
+\caption{Geographic view of cloud infrastructure in CloudAnalyst showing datacenter distribution and workload mapping}
+\label{fig:cloudanalyst}
+\end{figure}
+
+The evolution from tools like CloudAnalyst to CloudSim and indeed, CloudSim Plus has significantly advanced simulation capabilities, yet visualization tools haven't been developed alongside them. As noted by Silva et al \cite{silva2020cloudsim}, "modern cloud simulations generate complex, multi-dimensional datasets that require sophisticated visualization approaches." Despite this need, researchers are largely limited to basic data export and manual visualization through general-purpose tools. This represents a significant gap in the cloud simulation ecosystem, particularly when compared to the sophisticated visualization capabilities available in commercial platforms.
+
+\subsection{The Visualization Gap in Modern Cloud Simulation}
+While commercial platforms have made tremendous strides in visualization capabilities, cloud simulation tools remain notably behind. Figure \ref{fig:cloudwatch} shows AWS CloudWatch's sophisticated dashboard for monitoring cloud infrastructure. Similar capabilities can be found in other commercial platforms like DigitalOcean (Figure \ref{fig:digitalocean}), no comparable modern interface exists for cloud simulation environments.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{cloudwatch.jpeg}
+\caption{AWS CloudWatch dashboard demonstrating visualization capabilities absent in current simulation tools}
+\label{fig:cloudwatch}
+\end{figure}
+
+This visualization gap is particularly problematic given the increasing complexity of cloud simulations. Calheiros et al\cite{calheiros2011cloudsim} emphasize that "effective visualization of temporal patterns is crucial for understanding the behavior of simulated cloud environments." Yet researchers using CloudSim Plus and similar frameworks must rely on basic logging outputs and manual post-processing of results. The lack of integrated, modern visualization tools creates significant barriers to understanding simulation results and limits the accessibility of cloud simulation to new researchers.
+
+
+While CloudSim Plus offers sophisticated simulation capabilities, researchers must cobble together visualization solutions using general-purpose tools like Python plotting libraries or spreadsheet software. This approach is both time-consuming and limiting, as it does not capture the dynamic and interactive nature of cloud infrastructure.
+
+Current simulation workflows typically involve the following.
+\begin{itemize}
+    \item Manual extraction of simulation logs
+    \item Custom scripting for data processing
+    \item Use of general-purpose visualization tools
+    \item Limited ability to interact with or explore results
+\end{itemize}
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{digitalocean.png}
+\caption{DigitalOcean's modern interface highlighting the sophistication gap between commercial platforms and simulation tools}
+\label{fig:digitalocean}
+\end{figure}
+
+This workflow stands in stark contrast to the integrated, interactive visualization capabilities of commercial platforms. The lack of modern visualization tools for cloud simulation represents not just a technical gap but a significant barrier to accessibility and research effectiveness. As cloud computing continues to evolve in complexity, the need for sophisticated visualization tools becomes increasingly critical.
+
+
+The literature reveals an urgent need for visualization tools that can match the sophistication of modern cloud simulations. Such tools must not only adopt the successful patterns demonstrated by commercial platforms but also address the unique requirements of simulation environments. This includes supporting detailed analysis of temporal patterns, enabling interactive exploration of results, and providing clear visualization of complex resource relationships. The development of such tools represents a significant opportunity to advance the field of cloud computing research.
