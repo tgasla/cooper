@@ -3,40 +3,70 @@ package org.cooper.simulation;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
+
+import org.cloudsimplus.listeners.HostEventInfo;
 import org.cooper.simulation.metrics.HostMetric;
 
 public class Host {
     @SerializedName("id")
     private long cloudsimId;
-    private ArrayList<Double> startTimes = new ArrayList<>(); // seconds
-    private ArrayList<Double> endTimes = new ArrayList<>(); // seconds
+    private ArrayList<Double> startTimesSeconds = new ArrayList<>();
+    private ArrayList<Double> endTimesSeconds = new ArrayList<>();
 
     private HashMap<Long, Vm> vms = new HashMap<>();
     private ArrayList<HostMetric> metrics = new ArrayList<>();
 
-    public Host(long cloudsimId) {
-        this.cloudsimId = cloudsimId;
+    public Host(org.cloudsimplus.hosts.Host host) {
+        this.cloudsimId = host.getId();
+        host.addOnShutdownListener(this::onHostShutdownListener);
     }
 
-    public HashMap<Long, Vm> addVm(long cloudsimId, double time) {
-        Vm vm = new Vm(cloudsimId, time);
-        vms.put(cloudsimId, vm);
+    public void onHostShutdownListener(HostEventInfo event) {
+        var host = event.getHost();
 
-        return this.vms;
+        if (host.getFinishTime() > 0) {
+            Double lastFinishTime = Iterables.getLast(endTimesSeconds, null);
+            if (lastFinishTime == null || lastFinishTime != host.getFinishTime()) {
+                endTimesSeconds.add(host.getFinishTime());
+            }
+        }
+    }
+
+    public Vm addVm(org.cloudsimplus.vms.Vm cloudsimVm) {
+        Vm vm = new Vm(cloudsimVm);
+        vms.put(cloudsimVm.getId(), vm);
+
+        return vm;
+    }
+
+    public void record(org.cloudsimplus.hosts.Host host, Double time, Boolean recordMetrics) {
+        if (host.getStartTime() >= 0) {
+            Double lastStartUpTime = Iterables.getLast(startTimesSeconds, null);
+            if (lastStartUpTime == null || lastStartUpTime != host.getStartTime()) {
+                startTimesSeconds.add(host.getStartTime());
+            }
+        }
+
+        if (recordMetrics) {
+            this.recordMetric(host, time);
+        }
+
+        var vms = host.getVmList();
+        for (var vm : vms) {
+            Vm existingVm = this.getVms().get(vm.getId());
+            if (existingVm == null) {
+                existingVm = this.addVm(vm);
+            }
+
+            existingVm.record(vm, time, recordMetrics);
+        }
     }
 
     public void recordMetric(org.cloudsimplus.hosts.Host host, Double time) {
         HostMetric metric = new HostMetric(time, host.getCpuPercentUtilization(), host.getRamUtilization());
-        metrics.add(metric);
-    }
-
-    public void start(double time) {
-        this.startTimes.add(time);
-    }
-
-    public void finish(double time) {
-        this.endTimes.add(time);
+        this.metrics.add(metric);
     }
 
     public long getCloudsimId() {
@@ -44,11 +74,11 @@ public class Host {
     }
 
     public ArrayList<Double> getStartTimes() {
-        return startTimes;
+        return startTimesSeconds;
     }
 
     public ArrayList<Double> getEndTimes() {
-        return endTimes;
+        return endTimesSeconds;
     }
 
     public ArrayList<HostMetric> getMetrics() {

@@ -30,61 +30,38 @@ public class Simulation {
     }
 
     public void recordState(Datacenter dc, double time) {
-        System.out.println("Recording state at time " + time);
+        System.out.println("Recording state of simulation");
         var hostList = dc.getHostList();
 
         for (var cloudsimHost : hostList) {
             double hostId = cloudsimHost.getId();
 
-            if (!hosts.containsKey(hostId)) {
-                Host host = new Host(cloudsimHost.getId());
-
-                if (cloudsimHost.isActive()) {
-                    host.start(time);
-                }
-
-                hosts.put(hostId, host);
-            }
-
-            var existingHost = hosts.get(hostId);
-
-            if (recordMetrics) {
-                existingHost.recordMetric(cloudsimHost, time);
-            }
-
-            Host simulationHost = hosts.get(hostId);
-
-            for (var vm : cloudsimHost.getVmList()) {
-                if (!simulationHost.getVms().containsKey(vm.getId())) {
-                    simulationHost.addVm(vm.getId(), time);
-                }
+            if (!this.hosts.containsKey(hostId)) {
+                this.hosts.put(hostId, new Host(cloudsimHost));
             }
         }
 
-        for (var host : hosts.values()) {
-            var cloudsimHost = dc.getHostById(host.getCloudsimId());
-
-            if (!cloudsimHost.isActive()) {
-                double finishTime = cloudsimHost.getFinishTime();
-                host.finish(finishTime);
-            }
+        for (Host host : this.hosts.values()) {
+            System.out.println("Recording state of host " + host.getCloudsimId());
+            var csHost = dc.getHostById(host.getCloudsimId());
+            host.record(csHost, time, this.recordMetrics);
         }
     }
 
     public String getId() {
-        return id;
+        return this.id;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getStartedAt() {
-        return startedAt;
+        return this.startedAt;
     }
 
     public String getEndedAt() {
-        return endedAt;
+        return this.endedAt;
     }
 
     public void setEndedAt(String endedAt) {
@@ -92,7 +69,7 @@ public class Simulation {
     }
 
     public HashMap<Double, Host> getHosts() {
-        return hosts;
+        return this.hosts;
     }
 
     /**
@@ -102,16 +79,18 @@ public class Simulation {
      * 
      * @return Pretty-printed JSON string representing the simulation state
      */
-    public String getState() {
+    public String endSimulation(Datacenter dc, double time) {
+        this.recordState(dc, time);
+
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         HashMap<String, Object> simulationState = new HashMap<>();
 
         // Add simulation metadata
-        simulationState.put("id", id);
-        simulationState.put("name", name);
-        simulationState.put("startedAt", startedAt);
-        simulationState.put("endedAt", endedAt);
-        simulationState.put("hosts", hosts);
+        simulationState.put("id", this.id);
+        simulationState.put("name", this.name);
+        simulationState.put("startedAt", this.startedAt);
+        simulationState.put("endedAt", this.endedAt);
+        simulationState.put("hosts", this.hosts);
 
         return gson.toJson(simulationState);
     }
