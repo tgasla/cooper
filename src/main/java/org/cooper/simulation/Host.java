@@ -15,11 +15,15 @@ public class Host {
     private ArrayList<Double> startTimesSeconds = new ArrayList<>();
     private ArrayList<Double> endTimesSeconds = new ArrayList<>();
 
+    private long numCpuCores;
+
     private HashMap<Long, Vm> vms = new HashMap<>();
     private ArrayList<HostMetric> metrics = new ArrayList<>();
 
     public Host(org.cloudsimplus.hosts.Host host) {
+        host.enableUtilizationStats();
         this.cloudsimId = host.getId();
+        this.numCpuCores = host.getPesNumber();
         host.addOnShutdownListener(this::onHostShutdownListener);
     }
 
@@ -87,5 +91,9 @@ public class Host {
 
     public HashMap<Long, Vm> getVms() {
         return vms;
+    }
+
+    public long getNumCpuCores() {
+        return numCpuCores;
     }
 }
