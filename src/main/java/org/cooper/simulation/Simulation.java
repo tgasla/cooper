@@ -11,7 +11,7 @@ import org.cloudsimplus.datacenters.Datacenter;
 public class Simulation {
     private final String id;
     private final String name;
-    private final String startedAt;
+    private String startedAt;
     private String endedAt;
     private HashMap<Double, Host> hosts = new HashMap<>();
     private Boolean recordMetrics = true;
@@ -30,7 +30,6 @@ public class Simulation {
     }
 
     public void recordState(Datacenter dc, double time) {
-        System.out.println("Recording state of simulation");
         var hostList = dc.getHostList();
 
         for (var cloudsimHost : hostList) {
@@ -42,7 +41,6 @@ public class Simulation {
         }
 
         for (Host host : this.hosts.values()) {
-            System.out.println("Recording state of host " + host.getCloudsimId());
             var csHost = dc.getHostById(host.getCloudsimId());
             host.record(csHost, time, this.recordMetrics);
         }
