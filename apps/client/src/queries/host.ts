@@ -1,32 +1,35 @@
 import { useQuery } from "@tanstack/react-query";
 
 export interface Host {
-  id: string;
-  simulation_id: string;
-  cloudsim_id: string;
-  start_time_seconds: number;
-  finish_time_seconds: number | null;
-  vms: Vm[];
+  id: number;
+  startTimesSeconds: number[];
+  endTimesSeconds: number[];
+  numCpuCores: number;
+  vms: Record<string, Vm>;
+  metrics: Metric[];
 }
 
 export interface Vm {
-  id: string;
-  host_id: string;
-  cloudsim_id: number;
-  simulation_id: string;
-  start_time_seconds: number;
-  finish_time_seconds: number | null;
-  cloudlets: Cloudlet[];
+  id: number;
+  startTimesSeconds: number[];
+  endTimesSeconds: number[];
+  metrics: Metric[];
+  cloudlets: Record<string, Cloudlet>;
 }
 
 export interface Cloudlet {
-  id: string;
-  vm_id: string;
+  id: number;
+  startTime: number;
+  finishTime: number;
   length: number;
-  cloudsim_id: number;
-  simulation_id: string;
-  start_time_seconds: number;
-  finish_time_seconds: number | null;
+  finishedLength: number;
+  executionTime: number;
+  vmId: number;
+}
+
+export interface Metric {
+  // Add metric properties when they are defined in the JSON
+  [key: string]: any;
 }
 
 export function useHostQuery(simulationId: string | undefined) {

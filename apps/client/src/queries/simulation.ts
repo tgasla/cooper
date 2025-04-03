@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { Host } from "./host";
 
 export interface Simulation {
   id: string;
   name: string;
-  started_at: string;
-  ended_at: string | null;
+  startedAt: string;
+  hosts: Record<string, Host>;
 }
 
 export function useSimulationQuery() {
