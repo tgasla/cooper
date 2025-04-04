@@ -3,21 +3,21 @@ package org.cooper.simulation;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.google.gson.annotations.SerializedName;
-
-import org.cloudsimplus.listeners.EventListener;
 import org.cloudsimplus.listeners.VmHostEventInfo;
 import org.cooper.simulation.metrics.VmMetric;
+
 import com.google.common.collect.Iterables;
+import com.google.gson.annotations.SerializedName;
 
 public class Vm {
+
     @SerializedName("id")
-    private long cloudsimId;
-    private ArrayList<Double> startTimesSeconds = new ArrayList<>();
-    private ArrayList<Double> endTimesSeconds = new ArrayList<>();
-    private String hostId;
-    private ArrayList<VmMetric> metrics = new ArrayList<>();
-    private HashMap<Long, Cloudlet> cloudlets = new HashMap<>();
+    private final long cloudsimId;
+    private final ArrayList<Double> startTimesSeconds = new ArrayList<>();
+    private final ArrayList<Double> endTimesSeconds = new ArrayList<>();
+    //TODO: Add metrics
+    private final ArrayList<VmMetric> metrics = new ArrayList<>();
+    private final HashMap<Long, Cloudlet> cloudlets = new HashMap<>();
 
     public Vm(org.cloudsimplus.vms.Vm vm) {
         vm.addOnHostDeallocationListener(this::onVmFinishListener);
@@ -78,7 +78,4 @@ public class Vm {
         return this.endTimesSeconds;
     }
 
-    public String getHostId() {
-        return hostId;
-    }
 }
