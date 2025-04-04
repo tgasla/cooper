@@ -50,11 +50,13 @@ function TimeRangeCard({ start, end, execTime }: { start: number; end: number; e
   );
 }
 
-function ResourceCard({ title, value }: { title: string; value: number }) {
+function ResourceCard({ title, value, unit }: { title: string; value: number; unit: string }) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-zinc-700/50">
       <span className="text-sm text-zinc-400">{title}</span>
-      <span className="text-sm font-medium">{value}</span>
+      <span className="text-sm font-medium">
+        {Number.isInteger(value) ? value : value.toFixed(1)} {unit}
+      </span>
     </div>
   );
 }
@@ -69,131 +71,133 @@ function InfoPanel({ item, onItemSelect }: InfoPanelProps) {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-1">
-          {item.type === "host" && `Host ${item.id}`}
-          {item.type === "vm" && `VM ${item.id}`}
-          {item.type === "cloudlet" && `Cloudlet ${item.id}`}
-        </h2>
-        <div className="text-sm text-zinc-400">
-          {item.type === "host" && "Physical machine hosting VMs"}
-          {item.type === "vm" && "Virtual machine running cloudlets"}
-          {item.type === "cloudlet" && "Computational task running on a VM"}
+    <div className="h-full overflow-y-auto p-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold mb-1">
+            {item.type === "host" && `Host ${item.id}`}
+            {item.type === "vm" && `VM ${item.id}`}
+            {item.type === "cloudlet" && `Cloudlet ${item.id}`}
+          </h2>
+          <div className="text-sm text-zinc-400">
+            {item.type === "host" && "Physical machine hosting VMs"}
+            {item.type === "vm" && "Virtual machine running cloudlets"}
+            {item.type === "cloudlet" && "Computational task running on a VM"}
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-4">
-        {item.type === "host" && (
-          <>
-            <ResourceCard title="CPU Cores" value={item.numCpuCores} />
-            <ResourceCard title="VMs" value={Object.keys(item.vms).length} />
-          </>
-        )}
-        {item.type === "vm" && (
-          <>
-            <ResourceCard title="CPU Cores" value={1} />
-            <ResourceCard title="Cloudlets" value={Object.keys(item.cloudlets).length} />
-          </>
-        )}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {item.type === "host" && (
+            <>
+              <ResourceCard title="CPU Cores" value={item.numCpuCores} unit="cores" />
+              <ResourceCard title="VMs" value={Object.keys(item.vms).length} unit="VMs" />
+            </>
+          )}
+          {item.type === "vm" && (
+            <>
+              <ResourceCard title="CPU Cores" value={1} unit="core" />
+              <ResourceCard title="Cloudlets" value={Object.keys(item.cloudlets).length} unit="cloudlets" />
+            </>
+          )}
+          {item.type === "cloudlet" && (
+            <>
+              <ResourceCard title="Length" value={item.length} unit="MI" />
+              <ResourceCard title="Finished Length" value={item.finishedLength} unit="MI" />
+              <ResourceCard title="CPU Cores" value={1} unit="core" />
+            </>
+          )}
+        </div>
+
         {item.type === "cloudlet" && (
-          <>
-            <ResourceCard title="Length" value={item.length} />
-            <ResourceCard title="Finished Length" value={item.finishedLength} />
-            <ResourceCard title="CPU Cores" value={1} />
-          </>
+          <div className="mb-4">
+            <h3 className="text-sm font-medium mb-2">Time Information</h3>
+            <TimeRangeCard 
+              start={item.startTime} 
+              end={item.finishTime} 
+              execTime={item.executionTime}
+            />
+          </div>
+        )}
+
+        {item.type !== "cloudlet" && item.metrics && item.metrics.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-sm font-medium mb-2">Metrics</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {(item.metrics as Metric[]).map((metric, index) => (
+                <div key={index} className="bg-zinc-800/50 rounded-lg p-3">
+                  <div className="text-xs text-zinc-500 mb-2">Time: {formatTime(metric.simulationTime)}</div>
+                  <div className="space-y-2">
+                    <MetricCard 
+                      title="CPU Utilization" 
+                      value={metric.cpuUtilization} 
+                      unit="%" 
+                    />
+                    <MetricCard 
+                      title="RAM Usage" 
+                      value={metric.ramUsage} 
+                      unit="MB" 
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {item.type === "host" && (
+          <div className="mb-4">
+            <h3 className="text-sm font-medium mb-2">Virtual Machines</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(item.vms).map(([id, vm]) => (
+                <div 
+                  key={id} 
+                  className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800/80 transition-colors"
+                  onClick={() => onItemSelect({ type: "vm", id })}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">VM {vm.id}</div>
+                      <div className="text-xs text-zinc-400">
+                        {Object.keys(vm.cloudlets).length} cloudlets
+                      </div>
+                    </div>
+                    <div className="text-xs text-zinc-500">
+                      {formatTime(vm.startTimesSeconds[0])} - {formatTime(vm.endTimesSeconds[0] ?? 0)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {item.type === "vm" && (
+          <div className="mb-4">
+            <h3 className="text-sm font-medium mb-2">Cloudlets</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(item.cloudlets).map(([id, cloudlet]) => (
+                <div 
+                  key={id} 
+                  className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800/80 transition-colors"
+                  onClick={() => onItemSelect({ type: "cloudlet", id })}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Cloudlet {cloudlet.id}</div>
+                      <div className="text-xs text-zinc-400">
+                        Length: {cloudlet.length} MI
+                      </div>
+                    </div>
+                    <div className="text-xs text-zinc-500">
+                      {formatTime(cloudlet.startTime)} - {formatTime(cloudlet.finishTime)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
-
-      {item.type === "cloudlet" && (
-        <div className="mt-6">
-          <h3 className="text-sm font-medium mb-3">Time Information</h3>
-          <TimeRangeCard 
-            start={item.startTime} 
-            end={item.finishTime} 
-            execTime={item.executionTime}
-          />
-        </div>
-      )}
-
-      {item.type !== "cloudlet" && item.metrics && item.metrics.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-sm font-medium mb-3">Metrics</h3>
-          <div className="space-y-2">
-            {(item.metrics as Metric[]).map((metric, index) => (
-              <div key={index} className="bg-zinc-800/50 rounded-lg p-3">
-                <div className="text-xs text-zinc-500 mb-2">Time: {formatTime(metric.simulationTime)}</div>
-                <div className="space-y-2">
-                  <MetricCard 
-                    title="CPU Utilization" 
-                    value={metric.cpuUtilization} 
-                    unit="%" 
-                  />
-                  <MetricCard 
-                    title="RAM Usage" 
-                    value={metric.ramUsage} 
-                    unit="MB" 
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {item.type === "host" && (
-        <div className="mt-6">
-          <h3 className="text-sm font-medium mb-3">Virtual Machines</h3>
-          <div className="space-y-2">
-            {Object.entries(item.vms).map(([id, vm]) => (
-              <div 
-                key={id} 
-                className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800/80 transition-colors"
-                onClick={() => onItemSelect({ type: "vm", id })}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">VM {vm.id}</div>
-                    <div className="text-xs text-zinc-400">
-                      {Object.keys(vm.cloudlets).length} cloudlets
-                    </div>
-                  </div>
-                  <div className="text-xs text-zinc-500">
-                    {formatTime(vm.startTimesSeconds[0])} - {formatTime(vm.endTimesSeconds[0] ?? 0)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {item.type === "vm" && (
-        <div className="mt-6">
-          <h3 className="text-sm font-medium mb-3">Cloudlets</h3>
-          <div className="space-y-2">
-            {Object.entries(item.cloudlets).map(([id, cloudlet]) => (
-              <div 
-                key={id} 
-                className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800/80 transition-colors"
-                onClick={() => onItemSelect({ type: "cloudlet", id })}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Cloudlet {cloudlet.id}</div>
-                    <div className="text-xs text-zinc-400">
-                      Length: {cloudlet.length} MI
-                    </div>
-                  </div>
-                  <div className="text-xs text-zinc-500">
-                    {formatTime(cloudlet.startTime)} - {formatTime(cloudlet.finishTime)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
