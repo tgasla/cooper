@@ -20,5 +20,26 @@ jobs:
         distribution: 'zulu'
         cache: 'maven'
 
+    - name: Install gpg
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gpg
+
+    - name: Import GPG key
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      run: |
+        echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+
+    - name: Configure GPG
+      env:
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      run: |
+        echo "allow-preset-passphrase" >> ~/.gnupg/gpg-agent.conf
+        gpg-connect-agent reloadagent /bye
+        echo "$GPG_PASSPHRASE" | gpg --batch --passphrase-fd 0 --pinentry-mode loopback --decrypt
+
     - name: Build with Maven
-      run: mvn -B clean install --file pom.xml 
+      env:
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      run: mvn -B clean install --file pom.xml -Dgpg.passphrase="$GPG_PASSPHRASE" 
