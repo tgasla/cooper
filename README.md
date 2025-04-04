@@ -1,26 +1,51 @@
-# Cooper - Cloudsim Interface
+# Cooper
 
-This is a web interface for exploring [cloudsimplus](https://github.com/cloudsimplus/cloudsimplus) simulations.
+Cooper is a Java library and web interface that provides a simple and efficient way to record and analyze [CloudSimPlus](https://github.com/cloudsimplus/cloudsimplus) simulations.
 
-This repository includes both a Java API for collecting simulation data from cloudsimplus and a React web interface.
 
-### Gitlab Mirror
-This repository is [mirrored on Gitlab](https://csgitlab.ucd.ie/doylemark/cooper) however the [primary remote](https://github.com/doylemark/cooper) is Github.
 
-### Building the library
-1. Start the postgres container
-```zsh
-docker compose up -d
+## Requirements
+
+- Java 21 or later
+- Maven 3.6 or later
+- CloudSimPlus 8.5.2 or later
+
+## Installation
+
+Add Cooper to your Maven project:
+
+```xml
+<dependency>
+    <groupId>io.github.doylemark</groupId>
+    <artifactId>cooper</artifactId>
+    <version>0.0.1</version>
+</dependency>
 ```
-2. Install Dependencies
-```zsh
-sh mvnw install
+
+## Quick Start
+
+```java
+SimulationRecording recording = new SimulationRecording("Dynamic VMs Arrival");
+
+simulation.startSync();
+
+// Run the simulation and record state at each tick
+while (simulation.isRunning()) {
+    double clock = simulation.runFor(1);
+    recording.tick(datacenter, clock);
+}
+
+// Get the final state as JSON
+String output = recording.end(datacenter, simulation.clock());
 ```
-3. Migrate the database
-```zsh
-sh mvnw flyway:migrate
-```
-4. Run the Maven build again to generate JOOQ models from the database schema
-```zsh
-sh mvnw install
+
+## Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/doylemark/cooper.git
+cd cooper
+
+# Build the project
+mvn clean install
 ```
