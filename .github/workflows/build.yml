@@ -31,15 +31,11 @@ jobs:
       run: |
         echo "$GPG_PRIVATE_KEY" | gpg --batch --import
 
-    - name: Configure GPG
-      env:
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      run: |
-        echo "allow-preset-passphrase" >> ~/.gnupg/gpg-agent.conf
-        gpg-connect-agent reloadagent /bye
-        echo "$GPG_PASSPHRASE" | gpg --batch --passphrase-fd 0 --pinentry-mode loopback --decrypt
-
     - name: Build with Maven
       env:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      run: mvn -B clean install --file pom.xml -Dgpg.passphrase="$GPG_PASSPHRASE" 
+        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+      run: |
+        mvn -B clean install --file pom.xml \
+          -Dgpg.passphrase="$GPG_PASSPHRASE" \
+          -Dgpg.keyname="$GPG_KEY_ID" 
