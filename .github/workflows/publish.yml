@@ -41,8 +41,10 @@ jobs:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
         run: |
           mvn clean deploy -P release \
             -Dgpg.passphrase="$GPG_PASSPHRASE" \
+            -Dgpg.keyname="$GPG_KEY_ID" \
             -Dsonatype.username="$SONATYPE_USERNAME" \
             -Dsonatype.password="$SONATYPE_PASSWORD"
