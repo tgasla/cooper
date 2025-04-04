@@ -3,14 +3,15 @@ package org.cooper.simulation;
 import com.google.gson.annotations.SerializedName;
 
 public class Cloudlet {
+
     @SerializedName("id")
-    private long cloudsimId;
+    private final long cloudsimId;
     private double startTime;
     private double finishTime;
-    private long length;
+    private final long length;
     private long finishedLength;
     private double executionTime;
-    private long vmId;
+    private final long vmId;
 
     public Cloudlet(org.cloudsimplus.cloudlets.Cloudlet cloudlet) {
         this.cloudsimId = cloudlet.getId();

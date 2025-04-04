@@ -1,35 +1,43 @@
 package org.cooper.simulation;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.UUID;
-import java.time.Instant;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.cloudsimplus.datacenters.Datacenter;
 
-public class Simulation {
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class SimulationRecording {
+
     private final String id;
     private final String name;
-    private String startedAt;
+    private final String startedAt;
+    private final HashMap<Double, Host> hosts = new HashMap<>();
     private double simulationDuration;
-    private HashMap<Double, Host> hosts = new HashMap<>();
     private Boolean recordMetrics = true;
 
-    public Simulation(String name) {
+    public SimulationRecording(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.startedAt = Instant.now().toString();
     }
 
-    public Simulation(String name, Boolean recordMetrics) {
+    public SimulationRecording(String name, Boolean recordMetrics) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.startedAt = Instant.now().toString();
         this.recordMetrics = recordMetrics;
     }
 
-    public void recordState(Datacenter dc, double time) {
+    /**
+     * Records the state of the simulation at a given time.
+     *
+     * @param dc   The datacenter to record the state of
+     * @param time The time to record the state at
+     */
+    public void tick(Datacenter dc, double time) {
         var hostList = dc.getHostList();
 
         for (var cloudsimHost : hostList) {
@@ -69,25 +77,25 @@ public class Simulation {
     }
 
     /**
-     * Returns the current state of the simulation as a JSON string.
-     * The JSON includes simulation metadata and all hosts with their nested
-     * entities.
-     * 
+     * Returns the end state of the simulation as a JSON string. The JSON
+     * includes simulation metadata and all hosts with their nested entities.
+     *
+     * @param dc   The datacenter to record the state of
+     * @param time The time to record the state at
      * @return Pretty-printed JSON string representing the simulation state
      */
-    public String endSimulation(Datacenter dc, double time) {
-        this.recordState(dc, time);
+    public String end(Datacenter dc, double time) {
+        this.tick(dc, time);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        HashMap<String, Object> simulationState = new HashMap<>();
+        HashMap<String, Object> recording = new HashMap<>();
 
-        // Add simulation metadata
-        simulationState.put("id", this.id);
-        simulationState.put("name", this.name);
-        simulationState.put("startedAt", this.startedAt);
-        simulationState.put("duration", this.simulationDuration);
-        simulationState.put("hosts", this.hosts);
+        recording.put("id", this.id);
+        recording.put("name", this.name);
+        recording.put("startedAt", this.startedAt);
+        recording.put("duration", this.simulationDuration);
+        recording.put("hosts", this.hosts);
 
-        return gson.toJson(simulationState);
+        return gson.toJson(recording);
     }
 }

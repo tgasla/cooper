@@ -3,22 +3,21 @@ package org.cooper.simulation;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.google.common.collect.Iterables;
-import com.google.gson.annotations.SerializedName;
-
 import org.cloudsimplus.listeners.HostEventInfo;
 import org.cooper.simulation.metrics.HostMetric;
 
+import com.google.common.collect.Iterables;
+import com.google.gson.annotations.SerializedName;
+
 public class Host {
+
     @SerializedName("id")
-    private long cloudsimId;
-    private ArrayList<Double> startTimesSeconds = new ArrayList<>();
-    private ArrayList<Double> endTimesSeconds = new ArrayList<>();
-
-    private long numCpuCores;
-
-    private HashMap<Long, Vm> vms = new HashMap<>();
-    private ArrayList<HostMetric> metrics = new ArrayList<>();
+    private final long cloudsimId;
+    private final ArrayList<Double> startTimesSeconds = new ArrayList<>();
+    private final ArrayList<Double> endTimesSeconds = new ArrayList<>();
+    private final long numCpuCores;
+    private final HashMap<Long, Vm> vms = new HashMap<>();
+    private final ArrayList<HostMetric> metrics = new ArrayList<>();
 
     public Host(org.cloudsimplus.hosts.Host host) {
         host.enableUtilizationStats();
