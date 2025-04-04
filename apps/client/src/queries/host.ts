@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-
 export interface Host {
   id: number;
   startTimesSeconds: number[];
@@ -28,19 +26,7 @@ export interface Cloudlet {
 }
 
 export interface Metric {
-  // Add metric properties when they are defined in the JSON
-  [key: string]: any;
-}
-
-export function useHostQuery(simulationId: string | undefined) {
-  return useQuery({
-    enabled: !!simulationId,
-    queryKey: ["hosts"],
-    queryFn: async () => {
-      const response = await fetch(
-        `http://localhost:8080/host?order=id.desc&select=*,vms:vm(*,cloudlets:cloudlet(*))&simulation_id=eq.${simulationId}`,
-      );
-      return (await response.json()) as Array<Host>;
-    },
-  });
+  simulationTime: number;
+  cpuUtilization: number;
+  ramUsage: number;
 }

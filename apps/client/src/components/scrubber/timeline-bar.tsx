@@ -8,33 +8,36 @@ interface TimelineBarProps {
   color: "yellow" | "blue" | "green" | "purple";
   startAt: number;
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 function TimelineBar({
   width,
-  children,
-  color,
   startAt,
+  color,
   className,
-}: TimelineBarProps) {
-  //
+  onClick,
+  children,
+}: TimelineBarProps & { children: React.ReactNode }) {
   return (
     <motion.div
-      className={cn(
-        `flex flex-col`,
-        `min-h-12 rounded-lg`,
-        "flex relative text-white font-mono",
-        className,
-      )}
       initial={false}
       animate={{
-        opacity: 1,
-        width,
         marginLeft: startAt,
+        width,
       }}
+      className={cn(
+        "relative rounded-md cursor-pointer",
+        color === "yellow" && "bg-amber-500/40",
+        color === "blue" && "bg-indigo-500/40",
+        color === "green" && "bg-emerald-500/40",
+        className
+      )}
+      onClick={onClick}
     >
-      <div>{children}</div>
+      {children}
     </motion.div>
   );
 }
+
 export default TimelineBar;

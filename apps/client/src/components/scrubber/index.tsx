@@ -1,16 +1,10 @@
-import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
-import { useHostQuery, Vm } from "../../queries/host";
-import { useSimulationQuery } from "../../queries/simulation";
-import { useTimeQuery } from "../../queries/time";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "../../lib";
-import {
-  motion,
-  useMotionValue,
-  MotionValue,
-  AnimatePresence,
-} from "motion/react";
-import { useDrag, useGesture, usePinch } from "@use-gesture/react";
+import { motion, MotionValue, AnimatePresence } from "motion/react";
+import { useGesture } from "@use-gesture/react";
 import TimelineBar from "./timeline-bar";
+import { Simulation } from "../../queries/simulation";
+import { Host, Vm, Cloudlet } from "../../queries/host";
 
 const nearest10 = (n: number) => Math.ceil(n / 10) * 10;
 
@@ -73,12 +67,14 @@ function Cursor({ x, currentTime }: CursorProps) {
   );
 }
 
-function Scrubber() {
-  const [simulationId, setSimulationId] = useState<string>();
-  const { data: times } = useTimeQuery(simulationId);
-  const { data: simulations } = useSimulationQuery();
-  const { data: hosts } = useHostQuery(simulationId);
+interface ScrubberProps {
+  simulation: Simulation;
+  onItemSelect: (
+    item: { type: "host" | "vm" | "cloudlet"; id: string } | null,
+  ) => void;
+}
 
+function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [secondSize, setSecondSize] = useState(50);
   const container = useRef<HTMLDivElement>(null);
@@ -99,21 +95,8 @@ function Scrubber() {
     },
   );
 
-  useEffect(() => {
-    if (!simulationId && simulations && simulations.length > 0) {
-      setSimulationId(simulations[0].id);
-    }
-  }, [simulations, simulationId]);
-
-  if (!times || times.length === 0 || !hosts || hosts.length === 0) {
-    return null;
-  }
-
-  const startTime = times[0];
-  const endTime = times[times.length - 1];
-  const end = nearest10(endTime.simulation_time_seconds);
-  const delta =
-    endTime.simulation_time_seconds - startTime.simulation_time_seconds;
+  const endTime = simulation.duration;
+  const end = nearest10(endTime);
 
   const possibleNumberOfMarkersToRender =
     (container.current?.clientWidth ?? 1024) / secondSize;
@@ -140,135 +123,150 @@ function Scrubber() {
 
   const ignorable = markersToRender();
 
+  const handleItemClick = (type: "host" | "vm" | "cloudlet", id: string) => {
+    onItemSelect({ type, id });
+  };
+
   return (
-    <div className="overflow-visible">
-      <div className="h-full w-6" />
-      <div>
-        <button
-          className="border p-2"
-          onClick={() => setSecondSize(secondSize + 10)}
+    <div className="h-[500px] w-full flex">
+      <div className="flex-1 flex flex-col">
+        <div className="h-[60px] flex items-center gap-4 px-4">
+          <span className="text-sm text-gray-400">Zoom</span>
+          <input
+            type="range"
+            min="20"
+            max="200"
+            value={secondSize}
+            onChange={(e) => setSecondSize(Number(e.target.value))}
+            className="w-48 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+          />
+          <span className="text-sm text-gray-400">{secondSize}px/s</span>
+        </div>
+        <p>Simulation Time (seconds) ({secondSize})</p>
+        <div
+          className="bg-zinc-800 flex flex-col overflow-auto h-[440px] w-full relative"
+          style={{ maxWidth: `calc(100vw - 280px)` }}
+          ref={container}
         >
-          Zoom in
-        </button>
-        <button
-          className="border p-2"
-          onClick={() => setSecondSize(secondSize - 10)}
-        >
-          Zoom out
-        </button>
-      </div>
-      <p>Simulation Time (seconds) ({secondSize})</p>
-      <div
-        className="bg-zinc-800 flex flex-col overflow-scroll max-h-[500px] w-full max-w-screen relative"
-        ref={container}
-      >
-        {/*<Cursor x={cursorX} currentTime={currentTime} />*/}
-        <div className="ml-4 min-w-screen">
-          <div
-            style={{
-              width: `max(${secondSize * (end + 1) + 100}px, calc(100vw- 16px))`,
-            }}
-            className="z-20 flex items-center h-8 sticky top-0 bg-zinc-700 shadow-lg min-w-screen"
-          >
+          <div className="ml-4">
+            <div
+              style={{
+                width: `max(${secondSize * (end + 1) + 100}px, calc(100vw- 16px))`,
+              }}
+              className="z-20 flex items-center h-8 sticky top-0 bg-zinc-700 shadow-lg min-w-screen"
+            >
+              {new Array(end + 1).fill(0).map((_, t) => (
+                <motion.div
+                  key={t}
+                  initial={false}
+                  animate={{
+                    left: secondSize * t,
+                    width: secondSize,
+                  }}
+                  className="z-30 absolute flex justify-start items-center"
+                >
+                  <AnimatePresence>
+                    {t % ignorable === 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center justify-start gap-2 h-8"
+                      >
+                        <span className="w-1 h-1 -ml-0.5 rounded-full bg-white/50" />
+                        <span className="">{secondsToDuration(t)}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
             {new Array(end + 1).fill(0).map((_, t) => (
               <motion.div
                 key={t}
                 initial={false}
                 animate={{
                   left: secondSize * t,
-                  width: secondSize,
                 }}
-                className="z-30 absolute flex justify-start items-center"
-              >
-                <AnimatePresence>
-                  {t % ignorable === 0 && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center justify-start gap-2 h-8"
-                    >
-                      <span className="w-1 h-1 -ml-0.5 rounded-full bg-white/50" />
-                      <span className="">{secondsToDuration(t)}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                className="ml-4 absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
+              />
             ))}
-          </div>
-          {new Array(end + 1).fill(0).map((_, t) => (
-            <motion.div
-              key={t}
-              initial={false}
-              animate={{
-                left: secondSize * t,
-              }}
-              className="ml-4 absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
-            />
-          ))}
-          <div className="flex flex-col gap-4 py-4">
-            {hosts.map((host) => (
-              <>
-                <TimelineBar
-                  key={host.id}
-                  width={
-                    existedFor(
-                      host.start_time_seconds,
-                      host.finish_time_seconds ??
-                        endTime.simulation_time_seconds,
-                    ) * secondSize
-                  }
-                  className="bg-gradient-to-t from-amber-400/20 bg-amber-500/40 border-amber-600 border"
-                  startAt={host.start_time_seconds * secondSize}
-                >
-                  <span className="m-2 sticky left-2">
-                    Host {host.cloudsim_id}
-                  </span>
-                  <div className="flex flex-col gap-2">
-                    {host.vms.map((vm, idx) => {
-                      const vmStartTime = vm.start_time_seconds * secondSize;
-                      return (
-                        <TimelineBar
-                          key={vm.id}
-                          color="blue"
-                          startAt={vmStartTime}
-                          className="bg-gradient-to-t from-indigo-400/80 to-indigo-500/100 border-indigo-600 border"
-                          width={
-                            existedFor(
-                              vm.start_time_seconds,
-                              vm.finish_time_seconds ??
-                                endTime.simulation_time_seconds,
-                            ) *
-                              secondSize -
-                            2
-                          }
-                        >
-                          <span className="m-2 sticky left-2">
-                            VM {vm.cloudsim_id}
-                          </span>
+            <div className="flex flex-col gap-4 py-4">
+              {Object.entries(simulation.hosts).map(([id, host]) => (
+                <div key={host.id}>
+                  <TimelineBar
+                    key={host.id}
+                    width={
+                      existedFor(
+                        host.startTimesSeconds[0],
+                        host.endTimesSeconds[0] ?? simulation.duration,
+                      ) * secondSize
+                    }
+                    className="bg-gradient-to-t from-amber-400/20 bg-amber-500/40 border-amber-600 border"
+                    startAt={host.startTimesSeconds[0] * secondSize}
+                    color="yellow"
+                    onClick={(e: React.MouseEvent) =>
+                      handleItemClick("host", id)
+                    }
+                  >
+                    <span className="m-2 sticky left-2">Host {host.id}</span>
+                    <div className="flex flex-col gap-2">
+                      {Object.entries(host.vms).map(([id, vm], idx) => {
+                        const vmStartTime =
+                          vm.startTimesSeconds[0] * secondSize;
+                        return (
+                          <TimelineBar
+                            key={vm.id}
+                            color="blue"
+                            startAt={vmStartTime}
+                            className="bg-gradient-to-t from-indigo-400/80 to-indigo-500/100 border-indigo-600 border"
+                            width={
+                              existedFor(
+                                vm.startTimesSeconds[0],
+                                vm.endTimesSeconds[0] ?? simulation.duration,
+                              ) *
+                                secondSize -
+                              2
+                            }
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation();
+                              handleItemClick("vm", id);
+                            }}
+                          >
+                            <span className="m-2 sticky left-2">
+                              VM {vm.id}
+                            </span>
 
-                          {vm.cloudlets.map((cloudlet) => (
-                            <motion.div
-                              className="rounded bg-gradient-to-t from-emerald-500 to-emerald-400 flex"
-                              initial={false}
-                              animate={{
-                                marginLeft:
-                                  vmStartTime +
-                                  cloudlet.start_time_seconds * secondSize,
-                              }}
-                            >
-                              <span className="text-sm">
-                                Cloudlet {cloudlet.cloudsim_id}
-                              </span>
-                            </motion.div>
-                          ))}
-                        </TimelineBar>
-                      );
-                    })}
-                  </div>
-                </TimelineBar>
-              </>
-            ))}
+                            {Object.entries(vm.cloudlets).map(
+                              ([id, cloudlet]) => (
+                                <motion.div
+                                  key={id}
+                                  className="rounded bg-gradient-to-t from-emerald-500 to-emerald-400 flex"
+                                  initial={false}
+                                  animate={{
+                                    marginLeft:
+                                      vmStartTime +
+                                      cloudlet.startTime * secondSize,
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleItemClick("cloudlet", id);
+                                  }}
+                                >
+                                  <span className="text-sm">
+                                    Cloudlet {cloudlet.id}
+                                  </span>
+                                </motion.div>
+                              ),
+                            )}
+                          </TimelineBar>
+                        );
+                      })}
+                    </div>
+                  </TimelineBar>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
