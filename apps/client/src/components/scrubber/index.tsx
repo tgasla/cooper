@@ -123,8 +123,8 @@ function Scrubber({ simulation }: ScrubberProps) {
   const ignorable = markersToRender();
 
   return (
-    <div className="overflow-visible" style={{ width: "calc(100vw - 280px)" }}>
-      <div>
+    <div className="h-[500px] w-full flex flex-col">
+      <div className="h-[60px]">
         <button
           className="border p-2"
           onClick={() => setSecondSize(secondSize + 10)}
@@ -140,7 +140,7 @@ function Scrubber({ simulation }: ScrubberProps) {
       </div>
       <p>Simulation Time (seconds) ({secondSize})</p>
       <div
-        className="bg-zinc-800 flex flex-col overflow-scroll max-h-[500px] w-full max-w-screen relative"
+        className="bg-zinc-800 flex flex-col overflow-scroll h-[440px] w-full max-w-screen relative"
         ref={container}
       >
         {/*<Cursor x={cursorX} currentTime={currentTime} />*/}

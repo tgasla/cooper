@@ -31,7 +31,10 @@ function Index() {
           selectedSimulation={selectedSimulation}
           setSelectedSimulation={handleSetSelectedSimulation}
         />
-        {selectedSimulation && <Scrubber simulation={selectedSimulation} />}
+        <div className="flex flex-col" style={{ width: "calc(100vw - 280px)" }}>
+          <div className="h-full border border-red-500" />
+          {selectedSimulation && <Scrubber simulation={selectedSimulation} />}
+        </div>
       </div>
     </div>
   );
