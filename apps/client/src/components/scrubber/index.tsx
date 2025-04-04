@@ -1,16 +1,11 @@
-import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
-import { useHostQuery, Vm } from "../../queries/host";
-import { useSimulationQuery } from "../../queries/simulation";
+import { useEffect, useRef, useState } from "react";
+import { useHostQuery } from "../../queries/host";
 import { useTimeQuery } from "../../queries/time";
 import { cn } from "../../lib";
-import {
-  motion,
-  useMotionValue,
-  MotionValue,
-  AnimatePresence,
-} from "motion/react";
-import { useDrag, useGesture, usePinch } from "@use-gesture/react";
+import { motion, MotionValue, AnimatePresence } from "motion/react";
+import { useGesture } from "@use-gesture/react";
 import TimelineBar from "./timeline-bar";
+import { Simulation } from "../../queries/simulation";
 
 const nearest10 = (n: number) => Math.ceil(n / 10) * 10;
 
@@ -73,12 +68,11 @@ function Cursor({ x, currentTime }: CursorProps) {
   );
 }
 
-function Scrubber() {
-  const [simulationId, setSimulationId] = useState<string>();
-  const { data: times } = useTimeQuery(simulationId);
-  const { data: simulations } = useSimulationQuery();
-  const { data: hosts } = useHostQuery(simulationId);
+interface ScrubberProps {
+  simulation: Simulation;
+}
 
+function Scrubber({ simulation }: ScrubberProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [secondSize, setSecondSize] = useState(50);
   const container = useRef<HTMLDivElement>(null);
@@ -98,22 +92,10 @@ function Scrubber() {
       pinch: { threshold: 0.1 },
     },
   );
-
-  useEffect(() => {
-    if (!simulationId && simulations && simulations.length > 0) {
-      setSimulationId(simulations[0].id);
-    }
-  }, [simulations, simulationId]);
-
-  if (!times || times.length === 0 || !hosts || hosts.length === 0) {
-    return null;
-  }
-
-  const startTime = times[0];
-  const endTime = times[times.length - 1];
-  const end = nearest10(endTime.simulation_time_seconds);
-  const delta =
-    endTime.simulation_time_seconds - startTime.simulation_time_seconds;
+  console.log(simulation);
+  const endTime = simulation.simulationDuration;
+  const end = nearest10(endTime);
+  console.log({ end, endTime });
 
   const possibleNumberOfMarkersToRender =
     (container.current?.clientWidth ?? 1024) / secondSize;
@@ -141,8 +123,7 @@ function Scrubber() {
   const ignorable = markersToRender();
 
   return (
-    <div className="overflow-visible">
-      <div className="h-full w-6" />
+    <div className="overflow-visible" style={{ width: "calc(100vw - 280px)" }}>
       <div>
         <button
           className="border p-2"
@@ -207,26 +188,23 @@ function Scrubber() {
             />
           ))}
           <div className="flex flex-col gap-4 py-4">
-            {hosts.map((host) => (
+            {Object.entries(simulation.hosts).map(([id, host]) => (
               <>
                 <TimelineBar
                   key={host.id}
                   width={
                     existedFor(
-                      host.start_time_seconds,
-                      host.finish_time_seconds ??
-                        endTime.simulation_time_seconds,
+                      host.startTimesSeconds[0],
+                      host.endTimesSeconds[0] ?? simulation.simulationDuration,
                     ) * secondSize
                   }
                   className="bg-gradient-to-t from-amber-400/20 bg-amber-500/40 border-amber-600 border"
-                  startAt={host.start_time_seconds * secondSize}
+                  startAt={host.startTimesSeconds[0] * secondSize}
                 >
-                  <span className="m-2 sticky left-2">
-                    Host {host.cloudsim_id}
-                  </span>
+                  <span className="m-2 sticky left-2">Host {host.id}</span>
                   <div className="flex flex-col gap-2">
-                    {host.vms.map((vm, idx) => {
-                      const vmStartTime = vm.start_time_seconds * secondSize;
+                    {Object.entries(host.vms).map(([id, vm], idx) => {
+                      const vmStartTime = vm.startTimesSeconds[0] * secondSize;
                       return (
                         <TimelineBar
                           key={vm.id}
@@ -235,33 +213,33 @@ function Scrubber() {
                           className="bg-gradient-to-t from-indigo-400/80 to-indigo-500/100 border-indigo-600 border"
                           width={
                             existedFor(
-                              vm.start_time_seconds,
-                              vm.finish_time_seconds ??
-                                endTime.simulation_time_seconds,
+                              vm.startTimesSeconds[0],
+                              vm.endTimesSeconds[0] ??
+                                simulation.simulationDuration,
                             ) *
                               secondSize -
                             2
                           }
                         >
-                          <span className="m-2 sticky left-2">
-                            VM {vm.cloudsim_id}
-                          </span>
+                          <span className="m-2 sticky left-2">VM {vm.id}</span>
 
-                          {vm.cloudlets.map((cloudlet) => (
-                            <motion.div
-                              className="rounded bg-gradient-to-t from-emerald-500 to-emerald-400 flex"
-                              initial={false}
-                              animate={{
-                                marginLeft:
-                                  vmStartTime +
-                                  cloudlet.start_time_seconds * secondSize,
-                              }}
-                            >
-                              <span className="text-sm">
-                                Cloudlet {cloudlet.cloudsim_id}
-                              </span>
-                            </motion.div>
-                          ))}
+                          {Object.entries(vm.cloudlets).map(
+                            ([id, cloudlet]) => (
+                              <motion.div
+                                className="rounded bg-gradient-to-t from-emerald-500 to-emerald-400 flex"
+                                initial={false}
+                                animate={{
+                                  marginLeft:
+                                    vmStartTime +
+                                    cloudlet.startTime * secondSize,
+                                }}
+                              >
+                                <span className="text-sm">
+                                  Cloudlet {cloudlet.id}
+                                </span>
+                              </motion.div>
+                            ),
+                          )}
                         </TimelineBar>
                       );
                     })}
