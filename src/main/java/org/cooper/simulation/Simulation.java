@@ -12,7 +12,7 @@ public class Simulation {
     private final String id;
     private final String name;
     private String startedAt;
-    private String endedAt;
+    private double simulationDuration;
     private HashMap<Double, Host> hosts = new HashMap<>();
     private Boolean recordMetrics = true;
 
@@ -44,6 +44,8 @@ public class Simulation {
             var csHost = dc.getHostById(host.getCloudsimId());
             host.record(csHost, time, this.recordMetrics);
         }
+
+        this.simulationDuration = dc.getSimulation().clock();
     }
 
     public String getId() {
@@ -58,12 +60,8 @@ public class Simulation {
         return this.startedAt;
     }
 
-    public String getEndedAt() {
-        return this.endedAt;
-    }
-
-    public void setEndedAt(String endedAt) {
-        this.endedAt = endedAt;
+    public Double getSimulationDuration() {
+        return this.simulationDuration;
     }
 
     public HashMap<Double, Host> getHosts() {
@@ -87,7 +85,7 @@ public class Simulation {
         simulationState.put("id", this.id);
         simulationState.put("name", this.name);
         simulationState.put("startedAt", this.startedAt);
-        simulationState.put("endedAt", this.endedAt);
+        simulationState.put("duration", this.simulationDuration);
         simulationState.put("hosts", this.hosts);
 
         return gson.toJson(simulationState);
