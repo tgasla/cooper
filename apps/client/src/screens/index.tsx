@@ -1,8 +1,15 @@
 import { useState } from "react";
 import Header from "../components/header";
 import Scrubber from "../components/scrubber";
+import InfoPanel from "../components/scrubber/info-panel";
 import useLocalStorage from "../hooks/use-local-storage";
 import { Simulation } from "../queries/simulation";
+import { Host, Vm, Cloudlet } from "../queries/host";
+
+type TimelineItem =
+  | (Host & { type: "host" })
+  | (Vm & { type: "vm" })
+  | (Cloudlet & { type: "cloudlet" });
 
 function Index() {
   const [simulations, setSimulations] = useLocalStorage<Simulation[]>(
@@ -15,10 +22,41 @@ function Index() {
   const [selectedSimulation, setSelectedSimulation] = useState<
     Simulation | undefined
   >(simulations.find((sim) => sim.id === prevSimulationId));
+  const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
 
   const handleSetSelectedSimulation = (simulation: Simulation | undefined) => {
     setSelectedSimulation(simulation);
     setPrevSimulationId(simulation?.id ?? null);
+    setSelectedItem(null);
+  };
+
+  const handleItemSelect = (
+    item: { type: "host" | "vm" | "cloudlet"; id: string } | null,
+  ) => {
+    if (!selectedSimulation || !item) return;
+
+    if (item.type === "host") {
+      const host = selectedSimulation.hosts[item.id];
+      setSelectedItem({ ...host, type: "host" as const });
+    } else if (item.type === "vm") {
+      for (const host of Object.values(selectedSimulation.hosts)) {
+        const vm = host.vms[item.id];
+        if (vm) {
+          setSelectedItem({ ...vm, type: "vm" as const });
+          break;
+        }
+      }
+    } else if (item.type === "cloudlet") {
+      for (const host of Object.values(selectedSimulation.hosts)) {
+        for (const vm of Object.values(host.vms)) {
+          const cloudlet = vm.cloudlets[item.id];
+          if (cloudlet) {
+            setSelectedItem({ ...cloudlet, type: "cloudlet" as const });
+            break;
+          }
+        }
+      }
+    }
   };
 
   return (
@@ -31,10 +69,23 @@ function Index() {
           selectedSimulation={selectedSimulation}
           setSelectedSimulation={handleSetSelectedSimulation}
         />
-        <div className="flex flex-col" style={{ width: "calc(100vw - 280px)" }}>
-          <div className="h-full border border-red-500" />
-          {selectedSimulation && <Scrubber simulation={selectedSimulation} />}
-        </div>
+
+        {selectedSimulation && (
+          <div
+            className="flex flex-col h-full"
+            style={{ width: "calc(100vw - 280px)" }}
+          >
+            <div className="h-full border-b border-zinc-700/50">
+              <InfoPanel item={selectedItem} onItemSelect={handleItemSelect} />
+            </div>
+            <div className="flex-1">
+              <Scrubber
+                simulation={selectedSimulation}
+                onItemSelect={handleItemSelect}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

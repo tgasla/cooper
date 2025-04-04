@@ -4,6 +4,6 @@ export interface Simulation {
   id: string;
   name: string;
   startedAt: string;
-  simulationDuration: number;
+  duration: number;
   hosts: Record<string, Host>;
 }

@@ -2,7 +2,7 @@ export interface Host {
   id: number;
   startTimesSeconds: number[];
   endTimesSeconds: number[];
-  numberOfCpuCores: number;
+  numCpuCores: number;
   vms: Record<string, Vm>;
   metrics: Metric[];
 }
@@ -26,6 +26,7 @@ export interface Cloudlet {
 }
 
 export interface Metric {
-  // Add metric properties when they are defined in the JSON
-  [key: string]: any;
+  simulationTime: number;
+  cpuUtilization: number;
+  ramUsage: number;
 }
