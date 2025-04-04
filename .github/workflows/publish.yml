@@ -39,4 +39,7 @@ jobs:
             -Dgpg.passphrase="$GPG_PASSPHRASE" \
             -Dgpg.keyname="$GPG_KEY_ID" \
             -Dsonatype.username="$SONATYPE_USERNAME" \
-            -Dsonatype.password="$SONATYPE_PASSWORD"
+            -Dsonatype.password="$SONATYPE_PASSWORD" \
+            -Dsonatype.serverId=central \
+            -Dsonatype.nexusUrl=https://s01.oss.sonatype.org/ \
+            -Dsonatype.repositoryId=central
