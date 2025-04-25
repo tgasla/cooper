@@ -77,6 +77,7 @@ interface ScrubberProps {
 function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [secondSize, setSecondSize] = useState(50);
+  const [collapsedItems, setCollapsedItems] = useState<Set<string>>(new Set());
   const container = useRef<HTMLDivElement>(null);
 
   useGesture(
@@ -127,6 +128,38 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
     onItemSelect({ type, id });
   };
 
+  const toggleCollapse = (type: "host" | "vm", id: string) => {
+    setCollapsedItems(prev => {
+      const next = new Set(prev);
+      const fullId = `${type}-${id}`;
+      if (next.has(fullId)) {
+        next.delete(fullId);
+      } else {
+        next.add(fullId);
+      }
+      return next;
+    });
+  };
+
+  const toggleCollapseAll = () => {
+    setCollapsedItems(prev => {
+      if (prev.size === 0) {
+        // Collapse all
+        const allIds = new Set<string>();
+        Object.keys(simulation.hosts).forEach(hostId => {
+          allIds.add(`host-${hostId}`);
+          Object.keys(simulation.hosts[hostId].vms).forEach(vmId => {
+            allIds.add(`vm-${vmId}`);
+          });
+        });
+        return allIds;
+      } else {
+        // Expand all
+        return new Set();
+      }
+    });
+  };
+
   return (
     <div className="h-full max-h-[50%] w-full flex">
       <div className="flex-1 flex flex-col">
@@ -141,6 +174,12 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
             className="w-48 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
           />
           <span className="text-sm text-gray-400">{secondSize}px/s</span>
+          <button
+            onClick={toggleCollapseAll}
+            className="px-3 py-1 text-sm bg-zinc-700 hover:bg-zinc-600 rounded-md transition-colors"
+          >
+            {collapsedItems.size === 0 ? "Collapse All" : "Expand All"}
+          </button>
         </div>
         <p>Simulation Time (seconds) ({secondSize})</p>
         <div
@@ -209,60 +248,101 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
                       handleItemClick("host", id)
                     }
                   >
-                    <span className="m-2 sticky left-2">Host {host.id}</span>
-                    <div className="flex flex-col gap-2">
-                      {Object.entries(host.vms).map(([id, vm], idx) => {
-                        const vmStartTime =
-                          vm.startTimesSeconds[0] * secondSize;
-                        return (
-                          <TimelineBar
-                            key={vm.id}
-                            color="blue"
-                            startAt={vmStartTime}
-                            className="bg-gradient-to-t from-indigo-400/80 to-indigo-500/100 border-indigo-600 border"
-                            width={
-                              existedFor(
-                                vm.startTimesSeconds[0],
-                                vm.endTimesSeconds[0] ?? simulation.duration,
-                              ) *
-                                secondSize -
-                              2
-                            }
-                            onClick={(e: React.MouseEvent) => {
-                              e.stopPropagation();
-                              handleItemClick("vm", id);
-                            }}
-                          >
-                            <span className="m-2 sticky left-2">
-                              VM {vm.id}
-                            </span>
-
-                            {Object.entries(vm.cloudlets).map(
-                              ([id, cloudlet]) => (
-                                <motion.div
-                                  key={id}
-                                  className="rounded bg-gradient-to-t from-emerald-500 to-emerald-400 flex"
-                                  initial={false}
-                                  animate={{
-                                    marginLeft:
-                                      vmStartTime +
-                                      cloudlet.startTime * secondSize,
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleItemClick("cloudlet", id);
-                                  }}
-                                >
-                                  <span className="text-sm">
-                                    Cloudlet {cloudlet.id}
-                                  </span>
-                                </motion.div>
-                              ),
-                            )}
-                          </TimelineBar>
-                        );
-                      })}
+                    <div className="flex items-center">
+                      {Object.keys(host.vms).length > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCollapse("host", host.id.toString());
+                          }}
+                          className="p-1 hover:bg-zinc-700/50 rounded"
+                        >
+                          <span className={cn(
+                            "inline-block transition-transform duration-200",
+                            collapsedItems.has(`host-${host.id}`) ? "rotate-0" : "rotate-90"
+                          )}>
+                            ▶
+                          </span>
+                        </button>
+                      )}
+                      <span className="m-2 sticky left-2">Host {host.id}</span>
                     </div>
+                    {!collapsedItems.has(`host-${host.id}`) && (
+                      <div className="flex flex-col gap-2">
+                        {Object.entries(host.vms).map(([vmId, vm], idx) => {
+                          const vmStartTime =
+                            vm.startTimesSeconds[0] * secondSize;
+                          return (
+                            <TimelineBar
+                              key={vm.id}
+                              color="blue"
+                              startAt={vmStartTime}
+                              className="bg-gradient-to-t from-indigo-400/80 to-indigo-500/100 border-indigo-600 border"
+                              width={
+                                existedFor(
+                                  vm.startTimesSeconds[0],
+                                  vm.endTimesSeconds[0] ?? simulation.duration,
+                                ) *
+                                  secondSize -
+                                2
+                              }
+                              onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation();
+                                handleItemClick("vm", vmId);
+                              }}
+                            >
+                              <div className="flex items-center">
+                                {Object.keys(vm.cloudlets).length > 0 && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleCollapse("vm", vm.id.toString());
+                                    }}
+                                    className="p-1 hover:bg-zinc-700/50 rounded"
+                                  >
+                                    <span className={cn(
+                                      "inline-block transition-transform duration-200",
+                                      collapsedItems.has(`vm-${vm.id}`) ? "rotate-0" : "rotate-90"
+                                    )}>
+                                      ▶
+                                    </span>
+                                  </button>
+                                )}
+                                <span className="m-2 sticky left-2">
+                                  VM {vm.id}
+                                </span>
+                              </div>
+                              {!collapsedItems.has(`vm-${vm.id}`) && (
+                                <div className="flex flex-col gap-2">
+                                  {Object.entries(vm.cloudlets).map(
+                                    ([cloudletId, cloudlet]) => (
+                                      <motion.div
+                                        key={cloudlet.id}
+                                        className="rounded bg-gradient-to-t from-emerald-500 to-emerald-400 flex"
+                                        initial={false}
+                                        animate={{
+                                          marginLeft:
+                                            vmStartTime +
+                                            cloudlet.startTime * secondSize,
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleItemClick("cloudlet", cloudletId);
+                                        }}
+                                      >
+                                        <span className="text-sm">
+                                          Cloudlet {cloudlet.id}
+                                        </span>
+                                      </motion.div>
+                                    ),
+                                  )}
+                                </div>
+                              )}
+                            </TimelineBar>
+                          );
+                        })}
+                      </div>
+                    )}
                   </TimelineBar>
                 </div>
               ))}
