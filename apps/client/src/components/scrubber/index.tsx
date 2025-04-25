@@ -79,6 +79,7 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
   const [secondSize, setSecondSize] = useState(50);
   const [collapsedItems, setCollapsedItems] = useState<Set<string>>(new Set());
   const container = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useGesture(
     {
@@ -187,7 +188,7 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
           style={{ maxWidth: `calc(100vw - 280px)` }}
           ref={container}
         >
-          <div className="ml-4">
+          <div className="ml-4 relative" ref={contentRef}>
             <div
               style={{
                 width: `max(${secondSize * (end + 1) + 100}px, calc(100vw- 16px))`,
@@ -220,17 +221,19 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
                 </motion.div>
               ))}
             </div>
-            {new Array(end + 1).fill(0).map((_, t) => (
-              <motion.div
-                key={t}
-                initial={false}
-                animate={{
-                  left: secondSize * t,
-                }}
-                className="ml-4 absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
-              />
-            ))}
-            <div className="flex flex-col gap-4 py-4">
+            <div className="absolute inset-0 pointer-events-none">
+              {new Array(end + 1).fill(0).map((_, t) => (
+                <motion.div
+                  key={t}
+                  initial={false}
+                  animate={{
+                    left: secondSize * t,
+                  }}
+                  className="absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
+                />
+              ))}
+            </div>
+            <div className="flex flex-col gap-4 py-4 relative z-20">
               {Object.entries(simulation.hosts).map(([id, host]) => (
                 <div key={host.id}>
                   <TimelineBar
@@ -321,9 +324,7 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
                                         className="rounded bg-gradient-to-t from-emerald-500 to-emerald-400 flex"
                                         initial={false}
                                         animate={{
-                                          marginLeft:
-                                            vmStartTime +
-                                            cloudlet.startTime * secondSize,
+                                          marginLeft: cloudlet.startTime * secondSize,
                                         }}
                                         onClick={(e) => {
                                           e.stopPropagation();
