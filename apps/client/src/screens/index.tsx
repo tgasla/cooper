@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Header from "../components/header";
 import Scrubber from "../components/scrubber";
 import InfoPanel from "../components/scrubber/info-panel";
@@ -12,6 +13,7 @@ type TimelineItem =
   | (Cloudlet & { type: "cloudlet" });
 
 function Index() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [simulations, setSimulations] = useLocalStorage<Simulation[]>(
     "simulations",
     [],
@@ -19,21 +21,74 @@ function Index() {
   const [prevSimulationId, setPrevSimulationId] = useLocalStorage<
     string | null
   >("prevSimulationId", null);
+
+  // Initialize selected simulation from URL or localStorage
   const [selectedSimulation, setSelectedSimulation] = useState<
     Simulation | undefined
-  >(simulations.find((sim) => sim.id === prevSimulationId));
+  >(() => {
+    const simulationId = searchParams.get("simulationId") || prevSimulationId;
+    return simulations.find((sim) => sim.id === simulationId);
+  });
+
   const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
+
+  // Effect to handle URL parameters for both simulation and resource selection
+  useEffect(() => {
+    const simulationId = searchParams.get("simulationId");
+    const type = searchParams.get("type") as "host" | "vm" | "cloudlet" | null;
+    const id = searchParams.get("id");
+
+    // Handle simulation selection from URL
+    if (simulationId) {
+      const sim = simulations.find((s) => s.id === simulationId);
+      if (sim && sim !== selectedSimulation) {
+        setSelectedSimulation(sim);
+        setPrevSimulationId(sim.id);
+      }
+    } else {
+      setSelectedSimulation(undefined);
+      setPrevSimulationId(null);
+    }
+
+    // Handle resource selection from URL
+    if (selectedSimulation && type && id) {
+      handleItemSelect({ type, id });
+    } else {
+      setSelectedItem(null);
+    }
+  }, [searchParams, simulations]);
 
   const handleSetSelectedSimulation = (simulation: Simulation | undefined) => {
     setSelectedSimulation(simulation);
     setPrevSimulationId(simulation?.id ?? null);
     setSelectedItem(null);
+
+    // Update URL parameters for simulation change
+    if (simulation) {
+      setSearchParams({ simulationId: simulation.id });
+    } else {
+      setSearchParams({});
+    }
   };
 
   const handleItemSelect = (
     item: { type: "host" | "vm" | "cloudlet"; id: string } | null,
   ) => {
-    if (!selectedSimulation || !item) return;
+    if (!selectedSimulation || !item) {
+      setSelectedItem(null);
+      // Keep simulation ID in URL but remove resource params
+      setSearchParams(
+        selectedSimulation ? { simulationId: selectedSimulation.id } : {},
+      );
+      return;
+    }
+
+    // Update URL parameters preserving simulation ID
+    setSearchParams({
+      simulationId: selectedSimulation.id,
+      type: item.type,
+      id: item.id,
+    });
 
     if (item.type === "host") {
       const host = selectedSimulation.hosts[item.id];
@@ -62,28 +117,28 @@ function Index() {
   return (
     <div className="h-screen flex flex-col">
       <Header />
-      <div className="flex flex-1 w-screen">
+      <div
+        className="flex flex-1 w-screen"
+        style={{ maxHeight: "calc(100vh - 3rem)" }}
+      >
         <Sidebar
           simulations={simulations}
           setSimulations={setSimulations}
           selectedSimulation={selectedSimulation}
           setSelectedSimulation={handleSetSelectedSimulation}
         />
-
         {selectedSimulation && (
           <div
-            className="flex flex-col h-full"
+            className="flex flex-col max-h-full h-full overflow-y-auto"
             style={{ width: "calc(100vw - 280px)" }}
           >
             <div className="h-full border-b border-zinc-700/50">
               <InfoPanel item={selectedItem} onItemSelect={handleItemSelect} />
             </div>
-            <div className="flex-1">
-              <Scrubber
-                simulation={selectedSimulation}
-                onItemSelect={handleItemSelect}
-              />
-            </div>
+            <Scrubber
+              simulation={selectedSimulation}
+              onItemSelect={handleItemSelect}
+            />
           </div>
         )}
       </div>

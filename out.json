@@ -1,0 +1,120 @@
+[
+  {
+    "duration": 27,
+    "hosts": {
+      "0.0": {
+        "id": 0,
+        "startTimesSeconds": [
+          0
+        ],
+        "endTimesSeconds": [],
+        "numCpuCores": 2,
+        "vms": {
+          "0": {
+            "id": 0,
+            "startTimesSeconds": [
+              0,
+              13.099999999999996
+            ],
+            "endTimesSeconds": [
+              25
+            ],
+            "metrics": [],
+            "cloudlets": {
+              "0": {
+                "id": 0,
+                "startTime": 14,
+                "finishTime": 24,
+                "length": 10000,
+                "finishedLength": 10000,
+                "executionTime": 10,
+                "vmId": 0
+              }
+            }
+          }, 
+        },
+        "metrics": []
+      },
+      "1.0": {
+        "id": 1,
+        "startTimesSeconds": [
+          0
+        ],
+        "endTimesSeconds": [],
+        "numCpuCores": 2,
+        "vms": {
+          "1": {
+            "id": 1,
+            "startTimesSeconds": [
+              0,
+              13.099999999999996
+            ],
+            "endTimesSeconds": [
+              25
+            ],
+            "metrics": [],
+            "cloudlets": {
+              "1": {
+                "id": 1,
+                "startTime": 14,
+                "finishTime": 24,
+                "length": 10000,
+                "finishedLength": 10000,
+                "executionTime": 10,
+                "vmId": 1
+              }
+            }
+          },
+          "3": {
+            "id": 3,
+            "startTimesSeconds": [
+              0,
+              13.099999999999996
+            ],
+            "endTimesSeconds": [
+              25
+            ],
+            "metrics": [],
+            "cloudlets": {
+              "3": {
+                "id": 3,
+                "startTime": 14,
+                "finishTime": 24,
+                "length": 10000,
+                "finishedLength": 10000,
+                "executionTime": 10,
+                "vmId": 3
+              }
+            }
+          },
+          "5": {
+            "id": 5,
+            "startTimesSeconds": [
+              12
+            ],
+            "endTimesSeconds": [
+              13
+            ],
+            "metrics": [],
+            "cloudlets": {}
+          },
+          "7": {
+            "id": 7,
+            "startTimesSeconds": [
+              12
+            ],
+            "endTimesSeconds": [
+              13
+            ],
+            "metrics": [],
+            "cloudlets": {}
+          }
+        },
+        "metrics": []
+      }
+    },
+    "name": "Dynamic VMs Arrival",
+    "startedAt": "2025-04-04T02:39:16.821827Z",
+    "id": "6310061d-de56-4199-8547-365f698edc90"
+  }
+]

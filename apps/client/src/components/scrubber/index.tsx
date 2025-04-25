@@ -128,7 +128,7 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
   };
 
   return (
-    <div className="h-[500px] w-full flex">
+    <div className="h-full max-h-[50%] w-full flex">
       <div className="flex-1 flex flex-col">
         <div className="h-[60px] flex items-center gap-4 px-4">
           <span className="text-sm text-gray-400">Zoom</span>
@@ -144,7 +144,7 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
         </div>
         <p>Simulation Time (seconds) ({secondSize})</p>
         <div
-          className="bg-zinc-800 flex flex-col overflow-auto h-[440px] w-full relative"
+          className="bg-zinc-800 flex flex-col overflow-auto h-full w-full relative"
           style={{ maxWidth: `calc(100vw - 280px)` }}
           ref={container}
         >
