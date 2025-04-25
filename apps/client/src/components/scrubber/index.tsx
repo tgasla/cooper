@@ -193,8 +193,14 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
               style={{
                 width: `max(${secondSize * (end + 1) + 100}px, calc(100vw- 16px))`,
               }}
-              className="z-20 flex items-center h-8 sticky top-0 bg-zinc-700 shadow-lg min-w-screen"
+              className="z-50 flex items-center h-8 sticky top-0 bg-zinc-700 shadow-lg min-w-screen"
             >
+              <div 
+                className="absolute inset-0 bg-zinc-700"
+                style={{
+                  width: `${secondSize * (end + 1) + 100}px`,
+                }}
+              />
               {new Array(end + 1).fill(0).map((_, t) => (
                 <motion.div
                   key={t}
@@ -203,7 +209,7 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
                     left: secondSize * t,
                     width: secondSize,
                   }}
-                  className="z-30 absolute flex justify-start items-center"
+                  className="z-50 absolute flex justify-start items-center"
                 >
                   <AnimatePresence>
                     {t % ignorable === 0 && (
