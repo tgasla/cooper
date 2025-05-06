@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { motion } from "motion/react";
 import { cn } from "../../lib";
 
-interface TimelineBarProps {
+interface ResourceBarProps {
   width: number;
   children?: ReactNode;
   color: "yellow" | "blue" | "green" | "purple";
@@ -11,14 +11,14 @@ interface TimelineBarProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-function TimelineBar({
+function ResourceBar({
   width,
   startAt,
   color,
   className,
   onClick,
   children,
-}: TimelineBarProps & { children: React.ReactNode }) {
+}: ResourceBarProps & { children: React.ReactNode }) {
   return (
     <motion.div
       initial={false}
@@ -31,7 +31,7 @@ function TimelineBar({
         color === "yellow" && "bg-amber-500/40",
         color === "blue" && "bg-indigo-500/40",
         color === "green" && "bg-emerald-500/40",
-        className
+        className,
       )}
       onClick={onClick}
     >
@@ -40,4 +40,4 @@ function TimelineBar({
   );
 }
 
-export default TimelineBar;
+export default ResourceBar;
