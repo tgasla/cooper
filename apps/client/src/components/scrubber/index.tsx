@@ -209,27 +209,6 @@ interface SecondsLinesProps {
   isDragging: boolean;
 }
 
-function SecondsLines({ secondSize, end, isDragging }: SecondsLinesProps) {
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      {new Array(end + 1).fill(0).map((_, t) => (
-        <motion.div
-          key={t}
-          initial={false}
-          animate={{
-            left: secondSize * t,
-          }}
-          transition={{
-            duration: isDragging ? 0.1 : 0.3,
-            ease: "easeOut",
-          }}
-          className="absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
-        />
-      ))}
-    </div>
-  );
-}
-
 interface TimelineBarProps {
   container: React.RefObject<HTMLDivElement>;
   secondSize: number;
@@ -248,58 +227,52 @@ function TimelineBar({
   ignorable,
 }: TimelineBarProps) {
   return (
-    <div
-      className="bg-zinc-800 flex flex-col overflow-auto h-full w-full relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-      style={{ maxWidth: `calc(100vw - 280px)` }}
-      ref={container}
-    >
-      <div className="ml-4 relative" ref={contentRef}>
+    <div className="relative" ref={contentRef}>
+      <div
+        style={{
+          width: `max(${secondSize * (end + 1) + 100}px, calc(100vw- 16px))`,
+        }}
+        className="z-50 flex items-center h-8 bg-zinc-700 shadow-lg min-w-screen"
+      >
         <div
+          className="absolute inset-0 bg-zinc-700"
           style={{
-            width: `max(${secondSize * (end + 1) + 100}px, calc(100vw- 16px))`,
+            width: `${secondSize * (end + 1) + 100}px`,
           }}
-          className="z-50 flex items-center h-8 sticky top-0 bg-zinc-700 shadow-lg min-w-screen"
-        >
-          <div
-            className="absolute inset-0 bg-zinc-700"
-            style={{
-              width: `${secondSize * (end + 1) + 100}px`,
+        />
+        {new Array(end + 1).fill(0).map((_, t) => (
+          <motion.div
+            key={t}
+            initial={false}
+            animate={{
+              left: secondSize * t,
+              width: secondSize,
             }}
-          />
-          {new Array(end + 1).fill(0).map((_, t) => (
-            <motion.div
-              key={t}
-              initial={false}
-              animate={{
-                left: secondSize * t,
-                width: secondSize,
-              }}
-              transition={{
-                duration: isDragging ? 0.1 : 0.3,
-                ease: "easeOut",
-              }}
-              className="z-50 absolute flex justify-start items-center"
-            >
-              <AnimatePresence>
-                {t % ignorable === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      duration: isDragging ? 0.1 : 0.3,
-                      ease: "easeOut",
-                    }}
-                    className="flex items-center justify-start gap-2 h-8"
-                  >
-                    <span className="w-1 h-1 -ml-0.5 rounded-full bg-white/50" />
-                    <span className="">{secondsToDuration(t)}</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </div>
+            transition={{
+              duration: isDragging ? 0.1 : 0.3,
+              ease: "easeOut",
+            }}
+            className="z-50 absolute flex justify-start items-center"
+          >
+            <AnimatePresence>
+              {t % ignorable === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    duration: isDragging ? 0.1 : 0.3,
+                    ease: "easeOut",
+                  }}
+                  className="flex items-center justify-start gap-2 h-8"
+                >
+                  <span className="w-1 h-1 -ml-0.5 rounded-full bg-white/50" />
+                  <span className="">{secondsToDuration(t)}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        ))}
       </div>
     </div>
   );
@@ -401,8 +374,8 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
 
   return (
     <div className="h-full max-h-[50%] w-full flex">
-      <div className="flex-1 flex flex-col">
-        <div className="flex flex-col gap-4 py-4 relative z-20">
+      <div className="flex flex-col gap-4 relative z-20">
+        <div className="z-30 bg-zinc-800">
           <ScrubberHeader
             secondSize={secondSize}
             setSecondSize={setSecondSize}
@@ -411,28 +384,48 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
             collapsedItems={collapsedItems}
           />
         </div>
-        <p>Simulation Time (seconds) ({secondSize})</p>
-        <TimelineBar
-          container={container}
-          secondSize={secondSize}
-          end={end}
-          contentRef={contentRef}
-          isDragging={isDragging}
-          ignorable={ignorable}
-        />
-        <SecondsLines
-          secondSize={secondSize}
-          end={end}
-          isDragging={isDragging}
-        />
-        <ResourceBars
-          simulation={simulation}
-          handleItemClick={handleItemClick}
-          isDragging={isDragging}
-          collapsedItems={collapsedItems}
-          toggleCollapse={toggleCollapse}
-          secondSize={secondSize}
-        />
+        <div
+          className="bg-zinc-800 flex flex-col overflow-auto h-full w-full relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          style={{ maxWidth: `calc(100vw - 280px)` }}
+          ref={container}
+        >
+          <div className="sticky top-0 z-30 bg-zinc-800">
+            <TimelineBar
+              container={container}
+              secondSize={secondSize}
+              end={end}
+              contentRef={contentRef}
+              isDragging={isDragging}
+              ignorable={ignorable}
+            />
+          </div>
+          <div className="pt-4 relative flex flex-col gap-4">
+            <div className="absolute inset-0 pointer-events-none h-full">
+              {new Array(end + 1).fill(0).map((_, t) => (
+                <motion.div
+                  key={t}
+                  initial={false}
+                  animate={{
+                    left: secondSize * t,
+                  }}
+                  transition={{
+                    duration: isDragging ? 0.1 : 0.3,
+                    ease: "easeOut",
+                  }}
+                  className="absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
+                />
+              ))}
+            </div>
+            <ResourceBars
+              simulation={simulation}
+              handleItemClick={handleItemClick}
+              isDragging={isDragging}
+              collapsedItems={collapsedItems}
+              toggleCollapse={toggleCollapse}
+              secondSize={secondSize}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
