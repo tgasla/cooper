@@ -400,22 +400,11 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
             />
           </div>
           <div className="pt-4 relative flex flex-col gap-4">
-            <div className="absolute inset-0 pointer-events-none h-full">
-              {new Array(end + 1).fill(0).map((_, t) => (
-                <motion.div
-                  key={t}
-                  initial={false}
-                  animate={{
-                    left: secondSize * t,
-                  }}
-                  transition={{
-                    duration: isDragging ? 0.1 : 0.3,
-                    ease: "easeOut",
-                  }}
-                  className="absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
-                />
-              ))}
-            </div>
+            <SecondsLines
+              end={end}
+              secondSize={secondSize}
+              isDragging={isDragging}
+            />
             <ResourceBars
               simulation={simulation}
               handleItemClick={handleItemClick}
@@ -427,6 +416,33 @@ function Scrubber({ simulation, onItemSelect }: ScrubberProps) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+interface SecondsLinesProps {
+  end: number;
+  secondSize: number;
+  isDragging: boolean;
+}
+
+function SecondsLines({ end, secondSize, isDragging }: SecondsLinesProps) {
+  return (
+    <div className="absolute inset-0 pointer-events-none h-full">
+      {new Array(end + 1).fill(0).map((_, t) => (
+        <motion.div
+          key={t}
+          initial={false}
+          animate={{
+            left: secondSize * t,
+          }}
+          transition={{
+            duration: isDragging ? 0.1 : 0.3,
+            ease: "easeOut",
+          }}
+          className="absolute w-[1px] h-full bg-gradient-to-t from-white/5 to-white/10 z-10"
+        />
+      ))}
     </div>
   );
 }

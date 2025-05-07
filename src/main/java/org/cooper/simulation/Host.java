@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.cloudsimplus.listeners.HostEventInfo;
-import org.cooper.simulation.metrics.HostMetric;
 
 import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
@@ -17,7 +16,6 @@ public class Host {
     private final ArrayList<Double> endTimesSeconds = new ArrayList<>();
     private final long numCpuCores;
     private final HashMap<Long, Vm> vms = new HashMap<>();
-    private final ArrayList<HostMetric> metrics = new ArrayList<>();
 
     public Host(org.cloudsimplus.hosts.Host host) {
         host.enableUtilizationStats();
@@ -44,16 +42,12 @@ public class Host {
         return vm;
     }
 
-    public void record(org.cloudsimplus.hosts.Host host, Double time, Boolean recordMetrics) {
+    public void record(org.cloudsimplus.hosts.Host host, Double time) {
         if (host.getStartTime() >= 0) {
             Double lastStartUpTime = Iterables.getLast(startTimesSeconds, null);
             if (lastStartUpTime == null || lastStartUpTime != host.getStartTime()) {
                 startTimesSeconds.add(host.getStartTime());
             }
-        }
-
-        if (recordMetrics) {
-            this.recordMetric(host, time);
         }
 
         var vms = host.getVmList();
@@ -63,13 +57,8 @@ public class Host {
                 existingVm = this.addVm(vm);
             }
 
-            existingVm.record(vm, time, recordMetrics);
+            existingVm.record(vm, time);
         }
-    }
-
-    public void recordMetric(org.cloudsimplus.hosts.Host host, Double time) {
-        HostMetric metric = new HostMetric(time, host.getCpuPercentUtilization(), host.getRamUtilization());
-        this.metrics.add(metric);
     }
 
     public long getCloudsimId() {
@@ -82,10 +71,6 @@ public class Host {
 
     public ArrayList<Double> getEndTimes() {
         return endTimesSeconds;
-    }
-
-    public ArrayList<HostMetric> getMetrics() {
-        return metrics;
     }
 
     public HashMap<Long, Vm> getVms() {

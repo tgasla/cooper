@@ -237,17 +237,6 @@ function Sidebar({
           </ul>
         )}
       </div>
-
-      {selectedSimulation && (
-        <div className="p-3 border-t border-zinc-800/60">
-          <button
-            onClick={() => setSelectedSimulation(undefined)}
-            className="w-full text-center px-2 py-1.5 text-xs rounded-md font-medium bg-red-600/20 text-red-400 hover:bg-red-600/40 hover:text-red-300 transition-all"
-          >
-            Clear Selection
-          </button>
-        </div>
-      )}
     </div>
   );
 }

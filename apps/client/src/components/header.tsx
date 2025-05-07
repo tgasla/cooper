@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function Header() {
   return (
     <header className="bg-zinc-900/50 border-b border-zinc-800/60 backdrop-blur-sm">
@@ -7,8 +9,9 @@ function Header() {
             cloudsimplus
             <span className="text-zinc-500 ml-1.5">visualizer</span>
           </h1>
+          <Link to="/create">Create</Link>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <a
             href="https://github.com/doylemark/cooper"

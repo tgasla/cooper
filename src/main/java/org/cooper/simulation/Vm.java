@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.cloudsimplus.listeners.VmHostEventInfo;
-import org.cooper.simulation.metrics.VmMetric;
 
 import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
@@ -15,8 +14,6 @@ public class Vm {
     private final long cloudsimId;
     private final ArrayList<Double> startTimesSeconds = new ArrayList<>();
     private final ArrayList<Double> endTimesSeconds = new ArrayList<>();
-    //TODO: Add metrics
-    private final ArrayList<VmMetric> metrics = new ArrayList<>();
     private final HashMap<Long, Cloudlet> cloudlets = new HashMap<>();
 
     public Vm(org.cloudsimplus.vms.Vm vm) {
@@ -24,18 +21,12 @@ public class Vm {
         this.cloudsimId = vm.getId();
     }
 
-    public void record(org.cloudsimplus.vms.Vm vm, double time, Boolean recordMetrics) {
+    public void record(org.cloudsimplus.vms.Vm vm, double time) {
         if (vm.getStartTime() >= 0) {
             Double lastStartUpTime = Iterables.getLast(startTimesSeconds, null);
             if (lastStartUpTime == null || lastStartUpTime != vm.getStartTime()) {
                 startTimesSeconds.add(vm.getStartTime());
             }
-        }
-
-        if (recordMetrics) {
-            var ram = vm.getRam();
-            VmMetric metric = new VmMetric(time, vm.getCpuPercentUtilization(), ram.getPercentUtilization());
-            metrics.add(metric);
         }
 
         var scheduler = vm.getCloudletScheduler();

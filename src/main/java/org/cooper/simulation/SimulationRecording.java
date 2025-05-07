@@ -16,19 +16,11 @@ public class SimulationRecording {
     private final String startedAt;
     private final HashMap<Double, Host> hosts = new HashMap<>();
     private double simulationDuration;
-    private Boolean recordMetrics = true;
 
     public SimulationRecording(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.startedAt = Instant.now().toString();
-    }
-
-    public SimulationRecording(String name, Boolean recordMetrics) {
-        this.id = UUID.randomUUID().toString();
-        this.name = name;
-        this.startedAt = Instant.now().toString();
-        this.recordMetrics = recordMetrics;
     }
 
     /**
@@ -50,7 +42,7 @@ public class SimulationRecording {
 
         for (Host host : this.hosts.values()) {
             var csHost = dc.getHostById(host.getCloudsimId());
-            host.record(csHost, time, this.recordMetrics);
+            host.record(csHost, time);
         }
 
         this.simulationDuration = dc.getSimulation().clock();
