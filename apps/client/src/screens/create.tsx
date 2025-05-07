@@ -8,6 +8,7 @@ import { Vm } from "../lib/cloudsimplus/Vm";
 import ResourceCard from "./create/ResourceCard";
 import ResourceSlideover from "./create/ResourceSlideover";
 import ControlPanel from "./create/ControlPanel";
+import yaml from "js-yaml";
 
 // --- Resource Definitions ---
 const resources = {
@@ -55,6 +56,39 @@ function generateId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+// --- YAML Tag Helpers ---
+// No custom types needed for tagWrap approach
+
+function tagWrap(tag: string, obj: any) {
+  // js-yaml 4.x does not have a built-in way to wrap with a tag, so we use a custom object
+  return Object.assign(Object.create({}), obj, { __yamlTag: tag });
+}
+
+function replacer(key: string, value: any) {
+  if (value && value.__yamlTag) {
+    // Remove the __yamlTag property for serialization
+    const { __yamlTag, ...rest } = value;
+    return rest;
+  }
+  return value;
+}
+
+function customYamlDump(obj: any) {
+  // Use a custom replacer to remove __yamlTag
+  let yamlStr = yaml.dump(obj, { lineWidth: 120, replacer });
+  // Replace objects with __yamlTag with the correct tag
+  yamlStr = yamlStr.replace(/__yamlTag: (\!\w+)/g, "");
+  // Replace keys like '- __yamlTag: !datacenter' with '- !datacenter'
+  yamlStr = yamlStr.replace(/- __yamlTag: (\!\w+)/g, "- $1");
+  // Replace '- {key: value, ...}' with '- !tag\n  key: value ...' for our wrapped objects
+  yamlStr = yamlStr.replace(/- (\!\w+)\n  /g, "- $1\n  ");
+  // Replace '- !tag\n  key:' with '- !tag\n  key:' (no change, but ensures tag is on its own line)
+  yamlStr = yamlStr.replace(/- (\!\w+)\n/g, "- $1\n");
+  // Remove any empty __yamlTag lines
+  yamlStr = yamlStr.replace(/^\s*__yamlTag: .*$\n?/gm, "");
+  return yamlStr;
+}
+
 // --- Main Create Component ---
 function Create() {
   // --- State ---
@@ -72,6 +106,8 @@ function Create() {
     type: ResourceType;
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [yamlModal, setYamlModal] = useState(false);
+  const [yamlText, setYamlText] = useState("");
 
   // --- Canvas Config ---
   const canvasWidth = 3000;
@@ -266,6 +302,52 @@ function Create() {
     [zoom],
   );
 
+  // --- YAML Export ---
+  function resourceGraphToYamlStructure(resourceGraph: Record<string, ResourceNode>, placedItems: PlacedItem[]) {
+    // Collect datacenters (root nodes of type datacenter)
+    const datacenters = placedItems
+      .map(item => resourceGraph[item.id])
+      .filter(node => node && node.type === "datacenter")
+      .map(dc => {
+        const hosts = dc.children
+          .map(cid => resourceGraph[cid])
+          .filter(child => child && child.type === "host")
+          .map(host => tagWrap("!host", { ...host.data }));
+        const sans = dc.children
+          .map(cid => resourceGraph[cid])
+          .filter(child => child && child.type === "san")
+          .map(san => tagWrap("!san", { ...san.data }));
+        return tagWrap("!datacenter", {
+          ...dc.data,
+          hosts,
+          sans
+        });
+      });
+    // Collect VMs and Cloudlets for customers (root nodes of type vm, and their cloudlets)
+    const vms = placedItems
+      .map(item => resourceGraph[item.id])
+      .filter(node => node && node.type === "vm")
+      .map(vm => tagWrap("!vm", { ...vm.data }));
+    const cloudlets = Object.values(resourceGraph)
+      .filter(node => node.type === "cloudlet" && node.parentId && resourceGraph[node.parentId]?.type === "vm")
+      .map(cloudlet => tagWrap("!cloudlet", { ...cloudlet.data }));
+    // Only add a customer if there are vms or cloudlets
+    const customers = (vms.length || cloudlets.length)
+      ? [tagWrap("!customer", { vms, cloudlets })]
+      : [];
+    return {
+      datacenters,
+      customers
+    };
+  }
+
+  function handleExportYaml() {
+    const structure = resourceGraphToYamlStructure(resourceGraph, placedItems);
+    const doc = customYamlDump(structure);
+    setYamlText(doc);
+    setYamlModal(true);
+  }
+
   // Render all resource cards
   const resourceCards = placedItems.map((item) => {
     const node = resourceGraph[item.id];
@@ -300,6 +382,13 @@ function Create() {
             style={{ minWidth: 120 }}
           >
             Recenter
+          </button>
+          <button
+            className="px-3 py-1 bg-blue-700 hover:bg-blue-600 rounded text-white text-sm shadow"
+            onClick={handleExportYaml}
+            style={{ minWidth: 120 }}
+          >
+            Export YAML
           </button>
           <button
             className="px-2 py-1 bg-zinc-700 hover:bg-zinc-600 rounded text-white text-sm shadow"
@@ -352,6 +441,35 @@ function Create() {
             onClose={() => setSlideover(null)}
             onUpdate={handleUpdateResource}
           />
+        )}
+        {yamlModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="bg-zinc-900 rounded-lg shadow-xl p-6 w-[600px] max-w-full flex flex-col">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-bold text-blue-300">YAML Export</h3>
+                <button className="text-zinc-400 hover:text-zinc-200" onClick={() => setYamlModal(false)}>✕</button>
+              </div>
+              <textarea
+                className="w-full h-96 bg-zinc-800 text-zinc-100 rounded p-2 font-mono text-xs resize-none mb-4"
+                value={yamlText}
+                readOnly
+              />
+              <button
+                className="self-end px-4 py-1 rounded bg-blue-600 text-white hover:bg-blue-500"
+                onClick={() => {
+                  const blob = new Blob([yamlText], { type: 'text/yaml' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'scenario.yaml';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Download YAML
+              </button>
+            </div>
+          </div>
         )}
         <style>{`
           /* Custom scrollbar for webkit browsers */
