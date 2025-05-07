@@ -18,7 +18,7 @@ Add Cooper to your Maven project:
 <dependency>
     <groupId>io.github.doylemark</groupId>
     <artifactId>cooper</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.3</version>
 </dependency>
 ```
 
