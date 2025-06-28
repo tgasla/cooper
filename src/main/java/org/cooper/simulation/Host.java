@@ -22,6 +22,8 @@ public class Host {
         this.cloudsimId = host.getId();
         this.numCpuCores = host.getPesNumber();
         host.addOnShutdownListener(this::onHostShutdownListener);
+        // Assuming a listener for VM creation exists
+        host.getVmScheduler().addOnVmCreationListener(this::onVmCreationListener);
     }
 
     public void onHostShutdownListener(HostEventInfo event) {
@@ -35,10 +37,19 @@ public class Host {
         }
     }
 
+    // Listener for VM creation events
+    public void onVmCreationListener(VmHostEventInfo event) {
+        var cloudsimVm = event.getVm();
+        if (!vms.containsKey(cloudsimVm.getId())) {
+            addVm(cloudsimVm);
+        }
+    }
+
     public Vm addVm(org.cloudsimplus.vms.Vm cloudsimVm) {
         Vm vm = new Vm(cloudsimVm);
         vms.put(cloudsimVm.getId(), vm);
-
+        // Record initial state of the VM
+        // vm.record(cloudsimVm, cloudsimVm.getSimulation().clock());
         return vm;
     }
 
@@ -50,14 +61,23 @@ public class Host {
             }
         }
 
-        var vms = host.getVmList();
-        for (var vm : vms) {
-            Vm existingVm = this.getVms().get(vm.getId());
-            if (existingVm == null) {
-                existingVm = this.addVm(vm);
-            }
+        // VM recording is now event-driven, but we might still need to record VM states periodically
+        // for VMs that don't generate events frequently.
+        // For now, let's assume events cover all necessary updates.
+        // If not, we can add back a modified iteration here.
 
-            existingVm.record(vm, time);
+        // Ensure all current VMs on the host are known and record them
+        for (var cloudsimVmInstance : host.getVmList()) {
+            // Note: cloudsimVmInstance.getId() is long, vms map expects Long as key if generic.
+            // Assuming getCloudsimId() on our Vm returns long.
+            Vm existingVm = this.vms.get(cloudsimVmInstance.getId());
+            if (existingVm == null) {
+                // This VM wasn't added by an event listener (or this is the first time), add it now.
+                // The addVm method creates the Vm object, which attaches its own listeners.
+                existingVm = this.addVm(cloudsimVmInstance);
+            }
+            // Now call record on our Vm object, passing the CloudSim Vm object.
+            existingVm.record(cloudsimVmInstance, time);
         }
     }
 

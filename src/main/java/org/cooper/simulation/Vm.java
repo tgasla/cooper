@@ -19,6 +19,22 @@ public class Vm {
     public Vm(org.cloudsimplus.vms.Vm vm) {
         vm.addOnHostDeallocationListener(this::onVmFinishListener);
         this.cloudsimId = vm.getId();
+        // Assuming a listener for Cloudlet submission exists
+        if (vm.getCloudletScheduler() != null) {
+            vm.getCloudletScheduler().addOnCloudletSubmissionListener(this::onCloudletSubmissionListener);
+        }
+    }
+
+    // Listener for Cloudlet submission events
+    public void onCloudletSubmissionListener(org.cloudsimplus.listeners.CloudletListEventInfo event) {
+        for (var cloudlet : event.getCloudletList()) {
+            if (!cloudlets.containsKey(cloudlet.getId())) {
+                Cloudlet newCloudlet = new Cloudlet(cloudlet);
+                cloudlets.put(cloudlet.getId(), newCloudlet);
+                // Record initial state of the Cloudlet
+                // newCloudlet.record(cloudlet, cloudlet.getSimulation().clock());
+            }
+        }
     }
 
     public void record(org.cloudsimplus.vms.Vm vm, double time) {
@@ -29,20 +45,21 @@ public class Vm {
             }
         }
 
+        // Cloudlet recording is now event-driven for submissions.
+        // We still need to periodically update existing cloudlets.
         var scheduler = vm.getCloudletScheduler();
-
         if (scheduler != null) {
             for (var cloudlet : scheduler.getCloudletSubmittedList()) {
-                var existingCloudlet = cloudlets.get(cloudlet.getId());
+                Cloudlet existingCloudlet = cloudlets.get(cloudlet.getId());
+                // If a cloudlet was submitted before this VM object was created (e.g. during deserialization),
+                // it might not be in our map yet.
                 if (existingCloudlet == null) {
                     existingCloudlet = new Cloudlet(cloudlet);
                     cloudlets.put(cloudlet.getId(), existingCloudlet);
                 }
-
                 existingCloudlet.record(cloudlet, time);
             }
         }
-
     }
 
     public void onVmFinishListener(VmHostEventInfo event) {

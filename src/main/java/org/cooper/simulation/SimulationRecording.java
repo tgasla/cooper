@@ -30,19 +30,28 @@ public class SimulationRecording {
      * @param time The time to record the state at
      */
     public void tick(Datacenter dc, double time) {
+        // Ensure all hosts from the datacenter are known to the recording
         var hostList = dc.getHostList();
-
         for (var cloudsimHost : hostList) {
-            double hostId = cloudsimHost.getId();
-
-            if (!this.hosts.containsKey(hostId)) {
-                this.hosts.put(hostId, new Host(cloudsimHost));
+            long hostId = cloudsimHost.getId(); // Host ID is long
+            // Convert hostId to Double for map key, consistent with previous version, though Long might be better.
+            Double mapKey = (double) hostId;
+            if (!this.hosts.containsKey(mapKey)) {
+                // This will also attach listeners within the Host constructor
+                this.hosts.put(mapKey, new Host(cloudsimHost));
             }
         }
 
+        // Call record on each host. This will propagate to VMs and Cloudlets
+        // for periodic updates of entities that are still running or need state refresh.
         for (Host host : this.hosts.values()) {
+            // Retrieve the corresponding CloudSim Host object.
+            // The Host object in our map might be stale if the simulation dynamically adds/removes hosts,
+            // though our current listeners don't handle dynamic host removal from the `this.hosts` map.
             var csHost = dc.getHostById(host.getCloudsimId());
-            host.record(csHost, time);
+            if (csHost != null) { // Host might have been shut down and removed from DC
+                host.record(csHost, time);
+            }
         }
 
         this.simulationDuration = dc.getSimulation().clock();
