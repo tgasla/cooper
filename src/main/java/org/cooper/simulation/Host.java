@@ -17,14 +17,14 @@ public class Host {
     private final long numCpuCores;
     private final HashMap<Long, Vm> vms = new HashMap<>();
 
-    public Host(org.cloudsimplus.hosts.Host host) {
+    public Host(final org.cloudsimplus.hosts.Host host) {
         host.enableUtilizationStats();
         this.cloudsimId = host.getId();
         this.numCpuCores = host.getPesNumber();
         host.addOnShutdownListener(this::onHostShutdownListener);
     }
 
-    public void onHostShutdownListener(HostEventInfo event) {
+    public void onHostShutdownListener(final HostEventInfo event) {
         var host = event.getHost();
 
         if (host.getFinishTime() > 0) {
@@ -35,14 +35,14 @@ public class Host {
         }
     }
 
-    public Vm addVm(org.cloudsimplus.vms.Vm cloudsimVm) {
+    public Vm addVm(final org.cloudsimplus.vms.Vm cloudsimVm) {
         Vm vm = new Vm(cloudsimVm);
         vms.put(cloudsimVm.getId(), vm);
 
         return vm;
     }
 
-    public void record(org.cloudsimplus.hosts.Host host, Double time) {
+    public void record(final org.cloudsimplus.hosts.Host host, final Double time) {
         if (host.getStartTime() >= 0) {
             Double lastStartUpTime = Iterables.getLast(startTimesSeconds, null);
             if (lastStartUpTime == null || lastStartUpTime != host.getStartTime()) {

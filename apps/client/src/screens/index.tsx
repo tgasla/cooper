@@ -107,6 +107,7 @@ function Index() {
         for (const vm of Object.values(host.vms)) {
           const cloudlet = vm.cloudlets[item.id];
           if (cloudlet) {
+            console.log("Selected Cloudlet:", cloudlet);
             setSelectedItem({ ...cloudlet, type: "cloudlet" as const });
             break;
           }

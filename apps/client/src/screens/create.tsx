@@ -64,7 +64,7 @@ function tagWrap(tag: string, obj: any) {
   return Object.assign(Object.create({}), obj, { __yamlTag: tag });
 }
 
-function replacer(key: string, value: any) {
+function replacer(_key: string, value: any) {
   if (value && value.__yamlTag) {
     // Remove the __yamlTag property for serialization
     const { __yamlTag, ...rest } = value;

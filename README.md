@@ -49,3 +49,16 @@ cd cooper
 # Build the project
 mvn clean install
 ```
+
+## Self-Hosting Frontend
+
+Make sure you have Node.js (preferably latest version) and pnpm installed. It is recommended to use fnm to manage node and npm versions.
+See [this reddit comment](https://www.reddit.com/r/pop_os/comments/lpvk1z/comment/gq6ml3s/).
+Then run:
+
+```bash
+cd cooper/apps/client
+pnpm install
+pnpm build
+pnpm dev
+```

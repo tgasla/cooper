@@ -11,17 +11,19 @@ public class Cloudlet {
     private final long length;
     private long finishedLength;
     private double executionTime;
+    private final long numCpuCores;
     private final long vmId;
 
-    public Cloudlet(org.cloudsimplus.cloudlets.Cloudlet cloudlet) {
+    public Cloudlet(final org.cloudsimplus.cloudlets.Cloudlet cloudlet) {
         this.cloudsimId = cloudlet.getId();
         this.length = cloudlet.getLength();
         this.finishedLength = cloudlet.getFinishedLengthSoFar();
         this.executionTime = cloudlet.getTotalExecutionTime();
+        this.numCpuCores = cloudlet.getPesNumber();
         this.vmId = cloudlet.getVm().getId();
     }
 
-    public void record(org.cloudsimplus.cloudlets.Cloudlet cloudlet, double time) {
+    public void record(final org.cloudsimplus.cloudlets.Cloudlet cloudlet, final double time) {
         if (cloudlet.getStartTime() >= 0) {
             this.startTime = cloudlet.getStartTime();
         }
@@ -56,6 +58,10 @@ public class Cloudlet {
 
     public double getExecutionTime() {
         return this.executionTime;
+    }
+
+    public long getNumCpuCores() {
+        return this.numCpuCores;
     }
 
     public long getVmId() {

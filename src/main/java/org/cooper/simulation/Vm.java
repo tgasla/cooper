@@ -15,13 +15,15 @@ public class Vm {
     private final ArrayList<Double> startTimesSeconds = new ArrayList<>();
     private final ArrayList<Double> endTimesSeconds = new ArrayList<>();
     private final HashMap<Long, Cloudlet> cloudlets = new HashMap<>();
+    private final long numCpuCores;
 
-    public Vm(org.cloudsimplus.vms.Vm vm) {
+    public Vm(final org.cloudsimplus.vms.Vm vm) {
         vm.addOnHostDeallocationListener(this::onVmFinishListener);
         this.cloudsimId = vm.getId();
+        this.numCpuCores = vm.getPesNumber();
     }
 
-    public void record(org.cloudsimplus.vms.Vm vm, double time) {
+    public void record(final org.cloudsimplus.vms.Vm vm, final double time) {
         if (vm.getStartTime() >= 0) {
             Double lastStartUpTime = Iterables.getLast(startTimesSeconds, null);
             if (lastStartUpTime == null || lastStartUpTime != vm.getStartTime()) {
@@ -45,7 +47,7 @@ public class Vm {
 
     }
 
-    public void onVmFinishListener(VmHostEventInfo event) {
+    public void onVmFinishListener(final VmHostEventInfo event) {
         var vm = event.getVm();
         if (vm.getFinishTime() > 0) {
             Double lastFinishTime = Iterables.getLast(endTimesSeconds, null);
@@ -59,6 +61,10 @@ public class Vm {
 
     public long getCloudsimId() {
         return cloudsimId;
+    }
+
+    public long getNumCpuCores() {
+        return numCpuCores;
     }
 
     public ArrayList<Double> getStartTimesSeconds() {

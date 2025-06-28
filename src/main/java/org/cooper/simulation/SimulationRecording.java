@@ -17,7 +17,7 @@ public class SimulationRecording {
     private final HashMap<Double, Host> hosts = new HashMap<>();
     private double simulationDuration;
 
-    public SimulationRecording(String name) {
+    public SimulationRecording(final String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.startedAt = Instant.now().toString();
@@ -29,7 +29,7 @@ public class SimulationRecording {
      * @param dc   The datacenter to record the state of
      * @param time The time to record the state at
      */
-    public void tick(Datacenter dc, double time) {
+    public void tick(final Datacenter dc, final double time) {
         var hostList = dc.getHostList();
 
         for (var cloudsimHost : hostList) {
@@ -76,7 +76,7 @@ public class SimulationRecording {
      * @param time The time to record the state at
      * @return Pretty-printed JSON string representing the simulation state
      */
-    public String end(Datacenter dc, double time) {
+    public String end(final Datacenter dc, final double time) {
         this.tick(dc, time);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

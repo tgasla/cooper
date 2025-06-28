@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Host, Vm, Cloudlet } from "../../queries/host";
 
-type TimelineItem = 
+type TimelineItem =
   | (Host & { type: "host" })
   | (Vm & { type: "vm" })
   | (Cloudlet & { type: "cloudlet" });
@@ -33,7 +33,7 @@ function Sidebar({ isOpen, selectedItem, onClose }: SidebarProps) {
                 ✕
               </button>
             </div>
-            
+
             {selectedItem && (
               <div className="space-y-4">
                 {selectedItem.type === "host" && (
@@ -48,7 +48,7 @@ function Sidebar({ isOpen, selectedItem, onClose }: SidebarProps) {
                     </div>
                   </>
                 )}
-                
+
                 {selectedItem.type === "vm" && (
                   <>
                     <div>
@@ -56,11 +56,12 @@ function Sidebar({ isOpen, selectedItem, onClose }: SidebarProps) {
                       <p>ID: {selectedItem.id}</p>
                       <p>Start Times: {selectedItem.startTimesSeconds.join(", ")}s</p>
                       <p>End Times: {selectedItem.endTimesSeconds.join(", ")}s</p>
+                      <p>CPU Cores: {selectedItem.numCpuCores}</p>
                       <p>Number of Cloudlets: {Object.keys(selectedItem.cloudlets).length}</p>
                     </div>
                   </>
                 )}
-                
+
                 {selectedItem.type === "cloudlet" && (
                   <>
                     <div>
@@ -71,6 +72,7 @@ function Sidebar({ isOpen, selectedItem, onClose }: SidebarProps) {
                       <p>Length: {selectedItem.length}</p>
                       <p>Finished Length: {selectedItem.finishedLength}</p>
                       <p>Execution Time: {selectedItem.executionTime}s</p>
+                      <p>CPU Cores: {selectedItem.numCpuCores}</p>
                       <p>VM ID: {selectedItem.vmId}</p>
                     </div>
                   </>

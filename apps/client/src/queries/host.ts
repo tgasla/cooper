@@ -11,8 +11,9 @@ export interface Vm {
   id: number;
   startTimesSeconds: number[];
   endTimesSeconds: number[];
-  metrics: Metric[];
+  numCpuCores: number;
   cloudlets: Record<string, Cloudlet>;
+  metrics: Metric[];
 }
 
 export interface Cloudlet {
@@ -22,6 +23,7 @@ export interface Cloudlet {
   length: number;
   finishedLength: number;
   executionTime: number;
+  numCpuCores: number;
   vmId: number;
 }
 

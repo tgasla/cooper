@@ -1,7 +1,7 @@
 import { Host, Vm, Cloudlet } from "../../queries/host";
-import { cn } from "../../lib";
+// import { cn } from "../../lib";
 
-type TimelineItem = 
+type TimelineItem =
   | (Host & { type: "host" })
   | (Vm & { type: "vm" })
   | (Cloudlet & { type: "cloudlet" });
@@ -95,15 +95,15 @@ function InfoPanel({ item, onItemSelect }: InfoPanelProps) {
           )}
           {item.type === "vm" && (
             <>
-              <ResourceCard title="CPU Cores" value={1} unit="core" />
+              <ResourceCard title="CPU Cores" value={item.numCpuCores} unit="cores" />
               <ResourceCard title="Cloudlets" value={Object.keys(item.cloudlets).length} unit="cloudlets" />
             </>
           )}
           {item.type === "cloudlet" && (
             <>
+              <ResourceCard title="CPU Cores" value={item.numCpuCores} unit="cores" />
               <ResourceCard title="Length" value={item.length} unit="MI" />
               <ResourceCard title="Finished Length" value={item.finishedLength} unit="MI" />
-              <ResourceCard title="CPU Cores" value={1} unit="core" />
             </>
           )}
         </div>
@@ -111,9 +111,9 @@ function InfoPanel({ item, onItemSelect }: InfoPanelProps) {
         {item.type === "cloudlet" && (
           <div className="mb-4">
             <h3 className="text-sm font-medium mb-2">Time Information</h3>
-            <TimeRangeCard 
-              start={item.startTime} 
-              end={item.finishTime} 
+            <TimeRangeCard
+              start={item.startTime}
+              end={item.finishTime}
               execTime={item.executionTime}
             />
           </div>
@@ -127,15 +127,15 @@ function InfoPanel({ item, onItemSelect }: InfoPanelProps) {
                 <div key={index} className="bg-zinc-800/50 rounded-lg p-3">
                   <div className="text-xs text-zinc-500 mb-2">Time: {formatTime(metric.simulationTime)}</div>
                   <div className="space-y-2">
-                    <MetricCard 
-                      title="CPU Utilization" 
-                      value={metric.cpuUtilization} 
-                      unit="%" 
+                    <MetricCard
+                      title="CPU Utilization"
+                      value={metric.cpuUtilization}
+                      unit="%"
                     />
-                    <MetricCard 
-                      title="RAM Usage" 
-                      value={metric.ramUsage} 
-                      unit="MB" 
+                    <MetricCard
+                      title="RAM Usage"
+                      value={metric.ramUsage}
+                      unit="MB"
                     />
                   </div>
                 </div>
@@ -149,8 +149,8 @@ function InfoPanel({ item, onItemSelect }: InfoPanelProps) {
             <h3 className="text-sm font-medium mb-2">Virtual Machines</h3>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(item.vms).map(([id, vm]) => (
-                <div 
-                  key={id} 
+                <div
+                  key={id}
                   className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800/80 transition-colors"
                   onClick={() => onItemSelect({ type: "vm", id })}
                 >
@@ -176,8 +176,8 @@ function InfoPanel({ item, onItemSelect }: InfoPanelProps) {
             <h3 className="text-sm font-medium mb-2">Cloudlets</h3>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(item.cloudlets).map(([id, cloudlet]) => (
-                <div 
-                  key={id} 
+                <div
+                  key={id}
                   className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800/80 transition-colors"
                   onClick={() => onItemSelect({ type: "cloudlet", id })}
                 >

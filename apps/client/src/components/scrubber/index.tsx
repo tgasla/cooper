@@ -94,7 +94,7 @@ function ResourceBars({
         className="bg-gradient-to-t from-amber-400/20 bg-amber-500/40 border-amber-600 border"
         startAt={host.startTimesSeconds[0] * secondSize}
         color="yellow"
-        onClick={(e: React.MouseEvent) => handleItemClick("host", id)}
+        onClick={(_e: React.MouseEvent) => handleItemClick("host", id)}
       >
         <div className="flex items-center">
           {Object.keys(host.vms).length > 0 && (
@@ -134,7 +134,7 @@ function ResourceBars({
                       vm.startTimesSeconds[0],
                       vm.endTimesSeconds[0] ?? simulation.duration,
                     ) *
-                      secondSize -
+                    secondSize -
                     2
                   }
                   onClick={(e: React.MouseEvent) => {
@@ -219,7 +219,7 @@ interface TimelineBarProps {
 }
 
 function TimelineBar({
-  container,
+  // container,
   secondSize,
   end,
   contentRef,
