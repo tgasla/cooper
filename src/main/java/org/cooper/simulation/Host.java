@@ -42,7 +42,7 @@ public class Host {
         return vm;
     }
 
-    public void record(final org.cloudsimplus.hosts.Host host, final Double time) {
+    public void record(final org.cloudsimplus.hosts.Host host) {
         if (host.getStartTime() >= 0) {
             Double lastStartUpTime = Iterables.getLast(startTimesSeconds, null);
             if (lastStartUpTime == null || lastStartUpTime != host.getStartTime()) {
@@ -57,7 +57,7 @@ public class Host {
                 existingVm = this.addVm(vm);
             }
 
-            existingVm.record(vm, time);
+            existingVm.record(vm);
         }
     }
 

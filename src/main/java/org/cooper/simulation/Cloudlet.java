@@ -23,7 +23,7 @@ public class Cloudlet {
         this.vmId = cloudlet.getVm().getId();
     }
 
-    public void record(final org.cloudsimplus.cloudlets.Cloudlet cloudlet, final double time) {
+    public void record(final org.cloudsimplus.cloudlets.Cloudlet cloudlet) {
         if (cloudlet.getStartTime() >= 0) {
             this.startTime = cloudlet.getStartTime();
         }

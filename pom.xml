@@ -6,7 +6,7 @@
 
     <groupId>io.github.doylemark</groupId>
     <artifactId>cooper</artifactId>
-    <version>0.0.3</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Cooper</name>
     <description>A Java library for recording Cloudsimplus Simulations</description>
@@ -103,7 +103,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>3.1.0</version>
@@ -125,11 +125,11 @@
                 <configuration>
                     <publishingServerId>central</publishingServerId>
                 </configuration>
-            </plugin>
+            </plugin> -->
         </plugins>
     </build>
 
-    <distributionManagement>
+    <!-- <distributionManagement>
         <snapshotRepository>
             <id>central</id>
             <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
@@ -138,9 +138,9 @@
             <id>central</id>
             <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-    </distributionManagement>
+    </distributionManagement> -->
 
-    <profiles>
+    <!-- <profiles>
         <profile>
             <id>release</id>
             <build>
@@ -162,5 +162,5 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+    </profiles> -->
 </project>
