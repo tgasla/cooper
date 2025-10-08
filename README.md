@@ -24,19 +24,32 @@ Add Cooper to your Maven project:
 
 ## Quick Start
 
+### Asynchronous Mode
+
 ```java
-SimulationRecording recording = new SimulationRecording("Dynamic VMs Arrival");
+SimulationRecording recording = new SimulationRecording("Dynamic VMs Arrival", datacenter);
+
+// Run the simulation
+simulation.start();
+
+// Get the final state as JSON
+String output = recording.end();
+```
+
+### Synchronous Mode
+
+```java
+SimulationRecording recording = new SimulationRecording("Dynamic VMs Arrival", datacenter);
 
 simulation.startSync();
 
-// Run the simulation and record state at each tick
+// Run the simulation
 while (simulation.isRunning()) {
     double clock = simulation.runFor(1);
-    recording.tick(datacenter, clock);
 }
 
 // Get the final state as JSON
-String output = recording.end(datacenter, simulation.clock());
+String output = recording.end();
 ```
 
 ## Building from Source
